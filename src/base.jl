@@ -146,3 +146,9 @@ function getVals(algorithm::T) where T <: Union{DynaWorldModel, NODEModel}
     return p, fθ, Rϕ
 end
 
+
+macro getName(x)
+    quote
+        $(string(x))
+    end
+end

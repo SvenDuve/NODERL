@@ -25,7 +25,7 @@ function replPlots(t::T, file, p) where T <: NODEArchitecture
     #             color=:cyan,
     #             title="Reward Loss")
     display(diag)
-    UnicodePlots.savefig(diag, "/output/output.txt")
+    UnicodePlots.savefig(diag, "output/" * file * ".txt")
 
 
 end
@@ -36,6 +36,6 @@ function replPlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
                     Array{Float64}(p.total_rewards),
                     title="Rewards")
     display(diag)
-    UnicodePlots.savefig(diag, "/output/output.txt")
+    UnicodePlots.savefig(diag, "output/" * file * ".txt")
 
 end

@@ -1,5 +1,10 @@
 # Raspberry
 
+# wget https://julialang-s3.julialang.org/bin/linux/aarch64/1.8/julia-1.8.4-linux-aarch64.tar.gz
+# tar zxvf julia-1.8.4-linux-aarch64.tar.gz
+# export PATH="$PATH:/home/sven/julia-1.8.4/julia/bin"
+
+
 # machine name: learner-one
 # user: sven 
 # pass: pilsener
@@ -21,6 +26,26 @@
 #environment="Pendulum-v1"
 #environment="BipedalWalker-v3"
 
+DDPG_actor01_critic0025 = (Learner(DDPG(), 
+Online(), 
+Clamped()), 
+Parameter(environment="MountainCarContinuous-v0",
+train_start = 10000,
+max_episodes = 20,
+max_episodes_length = 1000,
+batch_size=128,
+η_actor = 0.001,
+η_critic = 0.001,
+τ_actor=0.1,
+τ_critic=0.025))
+
+
+
+p, μϕ = trainLearner(DDPG_actor01_critic0025[1],
+                    DDPG_actor01_critic0025[2])
+
+replPlots(DDPG_actor01_critic0025[1].algorithm, 
+            @getName(DDPG_actor01_critic0025), p)
 
 
 

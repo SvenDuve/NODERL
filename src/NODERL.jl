@@ -65,7 +65,8 @@ export RL,
         DyReward,
         NODEArchitecture,
         showResults,
-        replPlots
+        replPlots,
+        getName
 
 
 greet() = print("Hello World!")
