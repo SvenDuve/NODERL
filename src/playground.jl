@@ -168,3 +168,43 @@ p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()),
                 
 
 
+
+
+                
+                
+                function objective(episodes, batchsize) 
+                
+                    p, μϕ = trainLearner(Learner(DDPG(),
+                    Online(),
+                    Clamped()),
+                    Parameter(environment="MountainCarContinuous-v0",
+                    train_start = 10000,
+                    max_episodes = episodes,
+                    noise_type = "none",
+                    batch_size=batchsize,
+                    η_actor = 0.001,
+                    η_critic = 0.001,
+                    τ_actor=0.1,
+                    τ_critic=0.025));
+                
+                    return -sum(p.total_rewards[end-10, end])
+                
+                
+                end
+
+                
+using Hyperopt                
+ho = @hyperopt for i=20,
+    sampler = RandomSampler(),     
+    episodes = StepRange(30, 10, 50),
+    batchsize = StepRange(32, 32, 64)
+# delta = StepRange(10,5, 25),
+# lr =  exp10.(LinRange(-4,-3,10)),
+# mm =  LinRange(0.75,0.95,5),
+# day0 = StepRange(5,3, 10)
+    @show objective(episodes, batchsize)
+end
+# best_params, min_f = ho.minimizer, ho.minimum
+
+
+
