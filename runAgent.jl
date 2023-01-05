@@ -13,23 +13,24 @@ end
 
 
 
-function objective(episodes, batchsize) 
+function objective(τ_actor, τ_critic, η_actor, η_critic) 
 
     p, μϕ = trainLearner(Learner(DDPG(),
     Online(),
     Clamped()),
     Parameter(environment="MountainCarContinuous-v0",
     train_start = 10000,
-    max_episodes = episodes,
+    max_episodes = 10,
     noise_type = "none",
-    batch_size=batchsize,
-    η_actor = 0.001,
-    η_critic = 0.001,
-    τ_actor=0.1,
-    τ_critic=0.025));
+    η_actor = η_actor,
+    η_critic = η_critic,
+    τ_actor= τ_actor,
+    τ_critic= τ_critic));
+
+    file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
 
     replPlots(DDPG(), 
-                    @getName(episodes), p)
+                    , p)
 
     return -sum(p.total_rewards[end-2, end])
 
@@ -37,19 +38,24 @@ function objective(episodes, batchsize)
 end
 
                                
-ho = @hyperopt for i=20,
+ho = @hyperopt for i=2,
     sampler = RandomSampler(),     
-    episodes = StepRange(10, 1, 11),
-    batchsize = StepRange(32, 2, 36)
+    #episodes = StepRange(10, 1, 11),
+    #batchsize = StepRange(32, 2, 36),
+    τ_actor = LinRange(0.01, 0.2, 10), 
+    τ_critic = LinRange(0.01, 0.2, 10), 
+    η_actor = exp10.(LinRange(-4, -3, 10)),
+    η_critic = exp10.(LinRange(-4, -3, 10))
 # delta = StepRange(10,5, 25),
 # lr =  exp10.(LinRange(-4,-3,10)),
 # mm =  LinRange(0.75,0.95,5),
 # day0 = StepRange(5,3, 10)
-    @show objective(episodes, batchsize)
+    @show objective(τ_actor, τ_critic, η_actor, η_critic)
 end
-# best_params, min_f = ho.minimizer, ho.minimum
 
+best_params, min_f = ho.minimizer, ho.minimum
 
+println("Best Parameters " * string(best_params))
 
 
 
