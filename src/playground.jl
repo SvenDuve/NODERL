@@ -4,6 +4,12 @@
 # tar zxvf julia-1.8.4-linux-aarch64.tar.gz
 # export PATH="$PATH:/home/sven/julia-1.8.4/julia/bin"
 
+# machine popos
+# name: 192.168.178.136
+# user: svenduve
+# pass: pilsener
+
+
 
 # machine name: learner-one
 # user: sven 
@@ -187,17 +193,17 @@ p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()),
                     τ_actor=0.1,
                     τ_critic=0.025));
                 
-                    return -sum(p.total_rewards[end-10, end])
+                    return -sum(p.total_rewards[end-2, end])
                 
                 
                 end
 
                 
 using Hyperopt                
-ho = @hyperopt for i=20,
+ho = @hyperopt for i=3,
     sampler = RandomSampler(),     
-    episodes = StepRange(30, 10, 50),
-    batchsize = StepRange(32, 32, 64)
+    episodes = StepRange(10, 1, 11),
+    batchsize = StepRange(32, 2, 36)
 # delta = StepRange(10,5, 25),
 # lr =  exp10.(LinRange(-4,-3,10)),
 # mm =  LinRange(0.75,0.95,5),
