@@ -13,19 +13,21 @@ end
 
 
 
-function objective(τ_actor, τ_critic, η_actor, η_critic) 
+function objective(τ_actor, τ_critic, η_actor, η_critic, critic_hidden) 
 
     p, μϕ = trainLearner(Learner(DDPG(),
     Online(),
     Clamped()),
     Parameter(environment="MountainCarContinuous-v0",
     train_start = 10000,
-    max_episodes = 100,
+    max_episodes = 10,
     noise_type = "none",
     η_actor = η_actor,
     η_critic = η_critic,
     τ_actor= τ_actor,
-    τ_critic= τ_critic));
+    τ_critic= τ_critic,
+    critic_hidden = [(32, 32), (32, 32)],
+    actor_hidden = [(32, 32), (32, 32)]));
 
     # file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
 
@@ -41,10 +43,10 @@ ho = @hyperopt for i=20,
     sampler = RandomSampler(),     
     #episodes = StepRange(10, 1, 11),
     #batchsize = StepRange(32, 2, 36),
-    τ_actor = LinRange(0.01, 0.2, 10), 
-    τ_critic = LinRange(0.01, 0.2, 10), 
-    η_actor = exp10.(LinRange(-4, -3, 10)),
-    η_critic = exp10.(LinRange(-4, -3, 10))
+    τ_actor = LinRange(0.01, 0.2, 10), #weight cp params actor 
+    τ_critic = LinRange(0.01, 0.2, 10), # weight cp params actor
+    η_actor = exp10.(LinRange(-4, -3, 10)), #learning rate actor
+    η_critic = exp10.(LinRange(-4, -3, 10)) # learning rate critic
 # delta = StepRange(10,5, 25),
 # lr =  exp10.(LinRange(-4,-3,10)),
 # mm =  LinRange(0.75,0.95,5),

@@ -109,17 +109,19 @@ showResults(DDPG(), p)
 p, μϕ = trainLearner(Learner(DDPG(),
                 Online(),
                 Clamped()),
-                Parameter(environment="BipedalWalker-v3",
-                train_start = 1000,
-                max_episodes = 1000,
+                Parameter(environment="MountainCarContinuous-v0",
+                train_start = 10000,
+                max_episodes = 200,
                 # critic_hidden = [(64, 128), (128, 64)],
                 # actor_hidden = [(64, 128), (128, 64)],
                 noise_type = "none",
                 batch_size=128,
-                η_actor = 0.001,
-                η_critic = 0.001,
-                τ_actor=0.1,
-                τ_critic=0.025))
+                η_actor = 0.0005,
+                η_critic = 0.0002,
+                τ_actor=0.01,
+                τ_critic=0.2,
+                critic_hidden = [(32, 32), (32, 32)],
+                actor_hidden = [(32, 32), (32, 32)]))
 
 
 showResults(DDPG(), p)
@@ -176,27 +178,27 @@ p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()),
 
 
 
-                
-                
-                function objective(episodes, batchsize) 
-                
-                    p, μϕ = trainLearner(Learner(DDPG(),
-                    Online(),
-                    Clamped()),
-                    Parameter(environment="MountainCarContinuous-v0",
-                    train_start = 10000,
-                    max_episodes = episodes,
-                    noise_type = "none",
-                    batch_size=batchsize,
-                    η_actor = 0.001,
-                    η_critic = 0.001,
-                    τ_actor=0.1,
-                    τ_critic=0.025));
-                
-                    return -sum(p.total_rewards[end-2, end])
-                
-                
-                end
+
+
+function objective(episodes, batchsize) 
+
+    p, μϕ = trainLearner(Learner(DDPG(),
+    Online(),
+    Clamped()),
+    Parameter(environment="MountainCarContinuous-v0",
+    train_start = 10000,
+    max_episodes = episodes,
+    noise_type = "none",
+    batch_size=batchsize,
+    η_actor = 0.001,
+    η_critic = 0.001,
+    τ_actor=0.1,
+    τ_critic=0.025));
+
+    return -sum(p.total_rewards[end-2, end])
+
+
+end
 
                 
 using Hyperopt                
