@@ -37,7 +37,7 @@ function objective(episodes, batchsize)
 end
 
                                
-ho = @hyperopt for i=3,
+ho = @hyperopt for i=20,
     sampler = RandomSampler(),     
     episodes = StepRange(10, 1, 11),
     batchsize = StepRange(32, 2, 36)
