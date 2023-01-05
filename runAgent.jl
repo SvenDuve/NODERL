@@ -29,8 +29,7 @@ function objective(τ_actor, τ_critic, η_actor, η_critic)
 
     file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
 
-    replPlots(DDPG(), 
-                    , p)
+    replPlots(DDPG(), file, p)
 
     return -sum(p.total_rewards[end-2, end])
 
