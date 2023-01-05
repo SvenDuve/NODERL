@@ -20,16 +20,17 @@ function objective(τ_actor, τ_critic, η_actor, η_critic)
     Clamped()),
     Parameter(environment="MountainCarContinuous-v0",
     train_start = 10000,
-    max_episodes = 10,
+    max_episodes = 100,
     noise_type = "none",
     η_actor = η_actor,
     η_critic = η_critic,
     τ_actor= τ_actor,
     τ_critic= τ_critic));
 
-    file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
+    @show η_actor
+    # file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
 
-    replPlots(DDPG(), file, p)
+    replPlots(DDPG(), "file", p)
 
     return -sum(p.total_rewards[end-2, end])
 
@@ -37,7 +38,7 @@ function objective(τ_actor, τ_critic, η_actor, η_critic)
 end
 
                                
-ho = @hyperopt for i=2,
+ho = @hyperopt for i=20,
     sampler = RandomSampler(),     
     #episodes = StepRange(10, 1, 11),
     #batchsize = StepRange(32, 2, 36),
