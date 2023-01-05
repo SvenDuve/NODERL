@@ -27,7 +27,6 @@ function objective(τ_actor, τ_critic, η_actor, η_critic)
     τ_actor= τ_actor,
     τ_critic= τ_critic));
 
-    @show η_actor
     # file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
 
     replPlots(DDPG(), "file", p)
