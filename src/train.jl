@@ -131,10 +131,10 @@ function train(algorithm::DynaWorldModel, l::Learner)
         for i in 1:p.batch_size
         
             dθ = gradient(() -> loss(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(fθ))
-            update!(Optimise.Adam(0.005), Flux.params(fθ), dθ)
+            update!(Optimise.Adam(p.η_node), Flux.params(fθ), dθ)
 
             dϕ = gradient(() -> loss(DyReward(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(Rϕ))
-            update!(Optimise.Adam(0.005), Flux.params(Rϕ), dϕ)
+            update!(Optimise.Adam(p.η_reward), Flux.params(Rϕ), dϕ)
 
             append!(p.model_loss, loss(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]))
             append!(p.reward_loss, loss(DyReward(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]))

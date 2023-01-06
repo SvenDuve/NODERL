@@ -1,0 +1,9 @@
+Hyperoptimizer with
+  1 length: 10
+  2 length: 10
+  3 length: 10
+  4 length: 10
+  minimum / maximum: (-94.00861618252078, 50.939544658490846)
+  minimizer:
+  τ_actor  τ_critic   η_actor  η_critic 
+   0.1789    0.1156     0.001 0.0007743 

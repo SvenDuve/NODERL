@@ -13,7 +13,7 @@ end
 
 
 
-function objective(τ_actor, τ_critic, η_actor, η_critic, critic_hidden) 
+function objective(τ_actor, τ_critic, η_actor, η_critic) 
 
     p, μϕ = trainLearner(Learner(DDPG(),
     Online(),
@@ -33,7 +33,7 @@ function objective(τ_actor, τ_critic, η_actor, η_critic, critic_hidden)
 
     replPlots(DDPG(), "file", p)
 
-    return -sum(p.total_rewards[end-2, end])
+    return -sum(p.total_rewards[end-10, end])
 
 
 end
@@ -53,6 +53,11 @@ ho = @hyperopt for i=20,
 # day0 = StepRange(5,3, 10)
     @show objective(τ_actor, τ_critic, η_actor, η_critic)
 end
+
+open("output/resutl.txt", "w") do io
+    println(io, ho)
+end
+
 
 best_params, min_f = ho.minimizer, ho.minimum
 

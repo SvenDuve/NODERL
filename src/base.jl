@@ -21,8 +21,10 @@
     noise_type::String = "gaussian"
     τ_actor::Float64 = 0.1
     τ_critic::Float64 = 0.5
-    η_actor::Float64 = 0.0001
-    η_critic::Float64 = 0.01
+    η_actor::Float64 = 0.0001 #lr
+    η_critic::Float64 = 0.01 #lr
+    η_node::Float64 = 0.001 #lr
+    η_reward::Float64 = 0.001 #lr
     Sequences::Int = 10
     H::Int = 200
     m::Int = 1000
