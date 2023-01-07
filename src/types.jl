@@ -1,5 +1,6 @@
 abstract type RL end
 
+abstract type MBDDPG <: RL end
 abstract type Agent <: RL end
 abstract type Model <: RL end
 
@@ -14,6 +15,7 @@ abstract type ActionSelection <: RL end
 # Concrete
 struct Randomized <: ActionSelection end
 struct Clamped <: ActionSelection end
+struct MPC <: ActionSelection end
 
 # abstract type NN <: RL end
 # abstract type Node <: RL end
@@ -24,10 +26,12 @@ struct DDPG <: Agent end
 struct TW3 <: Agent end 
 struct SAC <: Agent end
 
+
 #struct DyNode <: Model end
 struct DynaWorldModel <: Model end
 struct NNModel <: Model end
 struct NODEModel <: Model end
+struct modelDDPG <: Model end
 
 
 abstract type NetworkArchitecture <: RL end
@@ -38,6 +42,12 @@ struct Reward <: NetworkArchitecture end
 struct NODE <: NetworkArchitecture end
 struct DyNODE <: NetworkArchitecture end
 struct DyReward <: NetworkArchitecture end
+
+abstract type GeneralBuffer <: RL end
+struct RandBuffer <: GeneralBuffer end
+struct MPCBuffer <: GeneralBuffer end
+
+#struct RandBuffer <: GeneralBuffer end
 
 
 const NODEArchitecture = Union{NODEModel, DynaWorldModel, NODE}

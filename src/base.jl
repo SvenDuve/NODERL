@@ -7,12 +7,17 @@
     action_bound_high::Array = [1.0]
     action_bound_low::Array = [-1.0]
     batch_size::Int = 128
+    DDPG_batch::Int = 128
     batch_length::Int = 40
     mem_size::Int = 1000000
     frames::Int = 0
+    env_steps::Int = 0
     train_start::Int = 1000 
     max_episodes::Int = 2000
     max_episodes_length::Int = 1000
+    max_episodes_length_mb::Int = 1000
+    Sequences::Int = 10
+    trainloops_mb::Int = 10
     critic_hidden::Array = [(200, 200)]
     actor_hidden::Array = [(200, 200)]
     reward_hidden::Array = [(200, 200)]
@@ -25,13 +30,13 @@
     η_critic::Float64 = 0.01 #lr
     η_node::Float64 = 0.001 #lr
     η_reward::Float64 = 0.001 #lr
-    Sequences::Int = 10
     H::Int = 200
     m::Int = 1000
     dT::Float32 = 0.01
     model_loss::Array = []
     reward_loss::Array = []
     total_rewards::Array = []
+    world_rewards::Array = []
 end
 
 
@@ -54,6 +59,7 @@ function 𝒩(ou::OrnsteinUhlenbeck)
     dx = dx .+ ou.σ .* randn(Float32, length(ou.X))
     ou.X = ou.X .+ dx
 end
+
 
 
 function 𝒩(gn::GaussianNoise)
@@ -96,8 +102,6 @@ end
 
 
 
-
-
 function (e::Episode)()
 
     s::Vector{Float32} = e.env.reset()
@@ -131,7 +135,37 @@ end
 
 
 function action(t::ActionSelection, m::Bool, s::Vector{Float32}, p::Parameter)
-    return env.action_space.sample()
+    return Vector{Float32}(env.action_space.sample())
+end
+
+function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 
+
+    Sequences = []
+
+    for k in 1:2  
+        append!(Sequences, [[[rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)] for j in 1:2]])
+    end
+
+    R = []
+    S = []
+    r = []
+    s_ = []
+
+    for Sequence in Sequences
+        for a in Sequence
+            append!(r, Rϕ(vcat(s, a)) |> first)
+            s = fθ(vcat(s, a))
+            #s = fθ(vcat(s, a))
+            append!(s_, s)
+        end
+        append!(R, sum(r))
+        append!(S, [s_])
+        r = []
+        s_ = []
+    end
+
+    return Vector{Float32}(Sequences[argmax(R)][1])
+
 end
 
 

@@ -12,7 +12,7 @@ function train(algorithm::DDPG, l::Learner)
 
         for (s, a, r, s′, t) in ep.episode
 
-            remember(p.mem_size, s, a, r, s′, t)
+            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
             p.frames += 1
 
             # if length(𝒟) >= p.train_start# && π.train
@@ -59,6 +59,34 @@ function train(algorithm::DDPG, l::Learner)
 
 end
 
+function initTrainDDPG(algorithm::modelDDPG) 
+
+
+    S, A, R, S′ = sampleBuffer(algorithm)
+
+    A′ = μϕ′(S′)
+    V′ = Qθ′(vcat(S′, A′))
+    Y = R + p.γ * V′
+
+    # critic
+    dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
+    update!(Optimise.Adam(p.η_critic), Flux.params(Qθ), dθ)
+
+    # actor
+    dϕ = gradient(() -> -loss(Actor(), S), Flux.params(μϕ))
+    update!(Optimise.Adam(p.η_actor), Flux.params(μϕ), dϕ)
+
+
+    for (base, target) in zip(Flux.params(Qθ), Flux.params(Qθ′))
+        target .= p.τ_critic * base .+ (1 - p.τ_critic) * target
+    end
+
+    for (base, target) in zip(Flux.params(μϕ), Flux.params(μϕ′))
+        target .= p.τ_actor * base .+ (1 - p.τ_actor) * target
+    end
+
+
+end
 
 
 
@@ -77,7 +105,7 @@ function train(algorithm::NODEModel, l::Learner)
 
         for (s, a, r, s′, t) in ep.episode
 
-            remember(p.mem_size, s, a, r, s′, t)
+            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
 
         end
         
@@ -119,8 +147,8 @@ function train(algorithm::DynaWorldModel, l::Learner)
 
 
         for (s, a, r, s′, t) in ep.episode
-
-            remember(p.mem_size, s, a, r, s′, t)
+ 
+            remember(RandBuffer(), p.mem_size, s, Vector{Float32}(a), r, s′, t)
 
         end
         
@@ -144,6 +172,43 @@ function train(algorithm::DynaWorldModel, l::Learner)
 
         if j % 10 == 0
             println("Iteration $j || Model loss $(p.model_loss[end]) || Reward loss $(p.reward_loss[end])")
+        end
+
+
+    end
+
+end
+
+
+
+
+
+
+
+function retrain(algorithm::DynaWorldModel, l::Learner)
+
+
+    for j in 1:40
+        
+        S, A, R, S′ = sampleBuffer(MPCBuffer())
+
+
+        for i in 1:p.batch_size
+        
+            dθ = gradient(() -> loss(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(fθ))
+            update!(Optimise.Adam(p.η_node), Flux.params(fθ), dθ)
+
+            dϕ = gradient(() -> loss(DyReward(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(Rϕ))
+            update!(Optimise.Adam(p.η_reward), Flux.params(Rϕ), dϕ)
+
+            append!(p.model_loss, loss(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]))
+            append!(p.reward_loss, loss(DyReward(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]))
+        
+        end
+
+
+        if j % 10 == 0
+            println("Retrain Iteration $j || Model loss $(p.model_loss[end]) || Reward loss $(p.reward_loss[end])")
         end
 
 

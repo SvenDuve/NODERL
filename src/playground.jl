@@ -32,18 +32,137 @@
 #environment="Pendulum-v1"
 #environment="BipedalWalker-v3"
 
-DDPG_actor01_critic0025 = (Learner(DDPG(), 
-Online(), 
-Clamped()), 
-Parameter(environment="MountainCarContinuous-v0",
-train_start = 10000,
+
+
+using PyCall
+using Conda
+
+p = Parameter(environment="MountainCarContinuous-v0",
+train_start = 1000,
 max_episodes = 20,
-max_episodes_length = 1000,
-batch_size=128,
+max_episodes_length = 999,
+Sequences = 10,
+batch_size=1,
+noise_type="none",
 η_actor = 0.001,
 η_critic = 0.001,
 τ_actor=0.1,
-τ_critic=0.025))
+τ_critic=0.025)
+
+
+gym = pyimport("gym")
+env = gym.make("BipedalWalker-v3")
+
+
+a_space = env.action_space.shape
+
+a_space[1]
+
+env.action_space.high
+env.action_space.low
+
+
+[Array{Float32}([rand(Uniform(el[1], el[2])) for el in zip(env.action_space.low, env.action_space.high)]) for j in 1:5]
+
+using Distributions
+
+rand(Uniform(-1,1))
+
+p = resetParameters(p)
+
+setNoise(p)
+
+global 𝒟 = []
+
+NODERL.setFunctionApproximation(DynaWorldModel())
+# MBRL 
+
+NODERL.fθ
+NODERL.Rϕ
+
+
+for j in 1:p.Sequences
+
+    ep = Episode(env, Learner(DynaWorldModel(), Episodic(), Randomized()), p)()
+
+
+    for (s, a, r, s′, t) in ep.episode
+
+        remember(p.mem_size, s, a, r, s′, t)
+
+    end
+    
+
+    S, A, R, S′ = sampleBuffer(l.serial)
+
+
+    for i in 1:p.batch_size
+    
+        dθ = gradient(() -> loss(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(fθ))
+        update!(Optimise.Adam(p.η_node), Flux.params(fθ), dθ)
+
+        dϕ = gradient(() -> loss(DyReward(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(Rϕ))
+        update!(Optimise.Adam(p.η_reward), Flux.params(Rϕ), dϕ)
+
+        append!(p.model_loss, loss(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]))
+        append!(p.reward_loss, loss(DyReward(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]))
+    
+    end
+
+
+    if j % 10 == 0
+        println("Iteration $j || Model loss $(p.model_loss[end]) || Reward loss $(p.reward_loss[end])")
+    end
+
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# batch_length        dT    η_node  η_reward 
+# 40  0.003162     0.001 0.0002154 
+
+
+
+p, buffer_one, buffer_two = MBDDPGAgent(Learner(DynaWorldModel(), Episodic(), Randomized()), 
+            Learner(DDPG(), Online(), Clamped()), 
+            Parameter(environment="MountainCarContinuous-v0",
+            train_start = 1000,
+            max_episodes = 100,
+            max_episodes_length = 999,
+            max_episodes_length_mb = 998,
+            Sequences = 100, # DynoWorld Learning
+            dT=0.003,
+            η_node=0.001,
+            η_reward = 0.002,
+            trainloops_mb = 10, # model based learner
+            batch_size=1,
+            reward_hidden=[(32, 32), (32, 32)],
+            dynode_hidden=[(32, 32), (32, 32)],
+            η_actor = 0.001,
+            η_critic = 0.001,
+            τ_actor=0.1,
+            τ_critic=0.025));
 
 
 

@@ -17,16 +17,16 @@ end
 
 function objective(batch_length, dT, η_node, η_reward) 
 
-    p, μϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()),
-    Parameter(batch_size=1,
-                batch_length=batch_length,
-                max_episodes_length=999,
-                Sequences=20,
-                dT = dT, 
-                reward_hidden=[(32, 32), (32, 32)],
-                dynode_hidden=[(20, 20), (20, 20)],
-                η_node = η_node,
-                η_reward = η_reward)); 
+    p, μϕ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()),
+                        Parameter(batch_size=1,
+                                    batch_length=batch_length,
+                                    max_episodes_length=999,
+                                    Sequences=20,
+                                    dT = dT, 
+                                    reward_hidden=[(32, 32), (32, 32)],
+                                    dynode_hidden=[(20, 20), (20, 20)],
+                                    η_node = η_node,
+                                    η_reward = η_reward)); 
 
     # file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
 
@@ -57,7 +57,10 @@ open("output/result_model.txt", "w") do io
     println(io, ho)
 end
 
-Plots.savefig(plot(ho), "output/plot_model.png")
+
+pl = plot(ho);
+
+Plots.savefig(pl, "output/plot_model.png")
 
 
 best_params, min_f = ho.minimizer, ho.minimum
