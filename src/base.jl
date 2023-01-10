@@ -7,6 +7,7 @@
     action_bound_high::Array = [1.0]
     action_bound_low::Array = [-1.0]
     batch_size::Int = 128
+    batch_size_episodic::Int = 1
     DDPG_batch::Int = 128
     batch_length::Int = 40
     mem_size::Int = 1000000
@@ -16,6 +17,7 @@
     max_episodes::Int = 2000
     max_episodes_length::Int = 1000
     max_episodes_length_mb::Int = 1000
+    episode_length::Array = []
     Sequences::Int = 10
     trainloops_mb::Int = 10
     critic_hidden::Array = [(200, 200)]
@@ -106,7 +108,7 @@ function (e::Episode)()
 
     s::Vector{Float32} = e.env.reset()
     r::Float64 = 0.0
-    a::Vector{Float64} = [0.0] # check action space
+    a::Vector{Float32} = [0.0] # check action space
     t::Bool = false
 
     for i in 1:e.maxn
@@ -118,6 +120,7 @@ function (e::Episode)()
         append!(e.episode, [(s, a, r, s′, t)])
         s = s′
         if t
+            append!(e.p.episode_length, i) 
             return e
             #s = env.reset()
         end
@@ -130,12 +133,12 @@ end
 
 
 function action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
-    vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
+    return vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
 end
 
 
 function action(t::ActionSelection, m::Bool, s::Vector{Float32}, p::Parameter)
-    return Vector{Float32}(env.action_space.sample())
+    return env.action_space.sample()
 end
 
 function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 
@@ -164,7 +167,7 @@ function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter)
         s_ = []
     end
 
-    return Vector{Float32}(Sequences[argmax(R)][1])
+    return Sequences[argmax(R)][1]
 
 end
 

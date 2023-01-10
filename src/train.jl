@@ -59,7 +59,7 @@ function train(algorithm::DDPG, l::Learner)
 
 end
 
-function initTrainDDPG(algorithm::modelDDPG) 
+function trainDDPG(algorithm::modelDDPG) 
 
 
     S, A, R, S′ = sampleBuffer(algorithm)
@@ -113,18 +113,18 @@ function train(algorithm::NODEModel, l::Learner)
         S, A, R, S′ = sampleBuffer(l.serial)
 
 
-        for i in 1:p.batch_size
+#        for i in 1:p.batch_size
         
-            dθ = gradient(() -> loss(NODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(fθ))
-            update!(Optimise.Adam(p.τ_actor), Flux.params(fθ), dθ)
+        dθ = gradient(() -> loss(NODE(), S, A, R, S′), params(fθ))
+        update!(Optimise.Adam(p.τ_actor), Flux.params(fθ), dθ)
 
-            dϕ = gradient(() -> loss(Reward(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(Rϕ))
-            update!(Optimise.Adam(p.τ_critic), Flux.params(Rϕ), dϕ)
+        dϕ = gradient(() -> loss(Reward(), S, A, R, S′), params(Rϕ))
+        update!(Optimise.Adam(p.τ_critic), Flux.params(Rϕ), dϕ)
 
-            append!(p.model_loss, loss(NODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]))
-            append!(p.reward_loss, loss(Reward(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]))
+        append!(p.model_loss, loss(NODE(), S, A, R, S′))
+        append!(p.reward_loss, loss(Reward(), S, A, R, S′))
         
-        end
+ #       end
 
 
         if j % 10 == 0
@@ -148,7 +148,7 @@ function train(algorithm::DynaWorldModel, l::Learner)
 
         for (s, a, r, s′, t) in ep.episode
  
-            remember(RandBuffer(), p.mem_size, s, Vector{Float32}(a), r, s′, t)
+            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
 
         end
         
@@ -156,7 +156,7 @@ function train(algorithm::DynaWorldModel, l::Learner)
         S, A, R, S′ = sampleBuffer(l.serial)
 
 
-        for i in 1:p.batch_size
+        for i in 1:p.batch_size_episodic
         
             dθ = gradient(() -> loss(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(fθ))
             update!(Optimise.Adam(p.η_node), Flux.params(fθ), dθ)
@@ -190,10 +190,10 @@ function retrain(algorithm::DynaWorldModel, l::Learner)
 
     for j in 1:40
         
-        S, A, R, S′ = sampleBuffer(MPCBuffer())
+        S, A, R, S′ = sampleBuffer(Episodic())
 
 
-        for i in 1:p.batch_size
+        for i in 1:p.batch_size_episodic
         
             dθ = gradient(() -> loss(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i], S′[:,:,i]), params(fθ))
             update!(Optimise.Adam(p.η_node), Flux.params(fθ), dθ)

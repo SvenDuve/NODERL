@@ -19,10 +19,19 @@ function loss(t::Reward, S, A, R, S′)
 end
 
 
-function loss(t::NODE, S, A, R, S′) 
 
-    Ŝ = fθ(vcat(S, A))
-    return Flux.mse(Ŝ, S′)
+# function loss(t::NODE, S, A, R, S′) 
+    
+#     Ŝ = fθ(vcat(S, A))
+#     return Flux.mse(Ŝ, S′)
+
+# end
+
+function loss(t::NODE, S, A, R, S′) 
+    
+    dS = fθ(vcat(S, A))
+
+    return Flux.mse(S′ - S, dS)
 
 end
 

@@ -35,10 +35,14 @@ function MBDDPGAgent(model::Learner, agent::Learner, pms::Parameter)
 
     global 𝒟_RL = []
 
-    for j in 1:p.trainloops_mb
+    for j in collect(1:p.trainloops_mb)
+
         println("MPC round $j")
         episodeRewards = []
-        s = world.reset()
+        s::Vector{Float32} = world.reset()
+        r::Float64 = 0.0
+        a::Vector{Float32} = [0.0] # check action space
+        t::Bool = false
         
         for i in 1:p.max_episodes_length_mb
 
@@ -56,12 +60,10 @@ function MBDDPGAgent(model::Learner, agent::Learner, pms::Parameter)
                return
             end
 
-
-
         end
 
-        if size(𝒟_RL)[1] > p.DDPG_batch # try and sat a parameter
-            initTrainDDPG(modelDDPG())
+        if size(𝒟_RL)[1] > p.DDPG_batch # try and set a parameter
+            trainDDPG(modelDDPG())
             println("Trained some DDPG.")
         end
 
@@ -71,135 +73,44 @@ function MBDDPGAgent(model::Learner, agent::Learner, pms::Parameter)
         println("Retraining done.")
     end
 
+
+    for j in collect(1:p.max_episodes)
+
+        println("DDPG round $j")
+        episodeRewards = []
+        s::Vector{Float32} = world.reset()
+        r::Float64 = 0.0
+        a::Vector{Float32} = [0.0] # check action space
+        t::Bool = false
+
+
+        for k in collect(1:800)
+
+            a = action(Clamped(), model.train, s, p)
+            p.env_steps += 1
+            # a = action(Randomized(), model.train, s, p)
+            s′, r, t, _ = world.step(a)
+            # @show s′, r, t
+            append!(episodeRewards, r)
+            remember(MPCBuffer(), p.mem_size, s, a, r, s′, t)
+            trainDDPG(modelDDPG())
+            
+            s = s′
+
+            if t
+                return
+            end
+
+        end
+
+        println("Episode Rewards: $(sum(episodeRewards))")
+        append!(p.world_rewards, sum(episodeRewards))
+
+    end
+
     # @show p.world_rewards
 
     return (p, 𝒟, 𝒟_RL)
 
 end
 
-# function dyNode(m::DyNodeModel, pms::Parameter)
-
-#     # To Do's:
-#     # to set up dynode_batch_size -> 64 in the paper
-
-#     # interactions with the real World
-
-
-#     gym = pyimport("gym")
-#     global env = gym.make(pms.environment)
-#     global p = resetParameters(pms)
-
-#     #setNoise(p)
-
-#     # set buffer
-#     global 𝒟 = []
-
-#     # global fθ = setNode(m, p)
-#     global fθ = setNetwork(m) # Code up a Network that will be solved with euler steps
-#     global Rϕ = setNetwork(Rewards())
-
-
-#     for i in 1:p.Sequences
-#         ep = Episode(env, m, p)()
-#         for (s, a, r, s′, t) in ep.episode
-#             remember(p.mem_size, s, a, r, s′, t)
-#         end
-
-#         model_loss, reward_loss = train(m)
-#         # alt_train(m)
-#         if i % 10 == 0
-#             println("Iteration $i")
-#         end
-#         append!(p.model_loss, model_loss)
-#         append!(p.reward_loss, reward_loss)
-#     end
-#     return p, fθ, Rϕ
-# end
-
-
-
-
-
-# function NODEAgent(m::NodeModel, pms::Parameter)
-
-#     # To Do's:
-#     # to set up dynode_batch_size -> 64 in the paper
-
-#     # interactions with the real World
-
-
-#     gym = pyimport("gym")
-#     global env = gym.make(pms.environment)
-#     global p = resetParameters(pms)
-
-#     #setNoise(p)
-#     #@show noise
-
-#     # set buffer
-#     global 𝒟 = []
-
-#     global fθ = setNode(m, p)
-#     global Rϕ = setNetwork(Rewards())
-
-
-#     for i in 1:p.Sequences
-#         ep = Episode(env, m, p)()
-#         for (s, a, r, s′, t) in ep.episode
-#             remember(p.mem_size, s, a, r, s′, t)
-#         end
-
-#         model_loss, reward_loss = train(m)
-#         if i % 10 == 0
-#             println("Iteration $i")
-#         end
-#         append!(p.model_loss, model_loss)
-#         append!(p.reward_loss, reward_loss)
-#     end
-    
-#     return p, fθ, Rϕ
-
-# end
-
-
-
-
-
-# function dynaWorld(m::DynaWorldModel, pms::Parameter)
-
-#     # To Do's:
-#     # to set up dynode_batch_size -> 64 in the paper
-
-#     # interactions with the real World
-
-
-#     gym = pyimport("gym")
-#     global env = gym.make(pms.environment)
-#     global p = resetParameters(pms)
-
-#     #setNoise(p)
-#     #@show noise
-
-#     # set buffer
-#     global 𝒟 = []
-
-#     global fθ = setNode(m, p)
-#     global Rϕ = setNetwork(Rewards())
-
-
-#     for i in 1:p.Sequences
-#         ep = Episode(env, m, p)()
-#         for (s, a, r, s′, t) in ep.episode
-#             remember(p.mem_size, s, a, r, s′, t)
-#         end
-
-#         model_loss, reward_loss = train(m)
-#         if i % 10 == 0
-#             println("Iteration $i")
-#         end
-#         append!(p.model_loss, model_loss)
-#         append!(p.reward_loss, reward_loss)
-#     end
-    
-#     return p, fθ, Rϕ
-
-# end
