@@ -25,9 +25,10 @@ function train(algorithm::DDPG, l::Learner)
                 Y = R + p.γ * V′
 
                 # critic
+                x = deepcopy(params(Qθ))
                 dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
                 update!(Optimise.Adam(p.η_critic), Flux.params(Qθ), dθ)
-
+                @show x == params(Qθ)
                 # actor
                 dϕ = gradient(() -> -loss(Actor(), S), Flux.params(μϕ))
                 update!(Optimise.Adam(p.η_actor), Flux.params(μϕ), dϕ)
@@ -114,9 +115,10 @@ function train(algorithm::NODEModel, l::Learner)
 
 
 #        for i in 1:p.batch_size
-        
+        #x = deepcopy(params(fθ))
         dθ = gradient(() -> loss(NODE(), S, A, R, S′), params(fθ))
         update!(Optimise.Adam(p.τ_actor), Flux.params(fθ), dθ)
+        #@show x == params(fθ)
 
         dϕ = gradient(() -> loss(Reward(), S, A, R, S′), params(Rϕ))
         update!(Optimise.Adam(p.τ_critic), Flux.params(Rϕ), dϕ)
@@ -169,9 +171,21 @@ function train(algorithm::DynaWorldModel, l::Learner)
         
         end
 
+        # some validation
 
         if j % 10 == 0
-            println("Iteration $j || Model loss $(p.model_loss[end]) || Reward loss $(p.reward_loss[end])")
+            S, A, R, S′ = sampleBuffer(l.serial)
+            Ŝ = similar(S)
+            R̂ = similar(R)
+
+            for i in 1:p.batch_size_episodic
+                Ŝ[:,:,i], R̂[:,:,i] = transitionValidation(DyNODE(), S[:,:,i], A[:,:,i], R[:,:,i])
+            end
+
+            valLoss = 1/p.batch_size_episodic * (1 / p.state_size) * (1 / p.batch_length) * sum(abs.(copy(Ŝ) - S′))
+            append!(p.validation_loss, valLoss)
+
+            println("Iteration $j || Model loss $(p.model_loss[end]) || Reward loss $(p.reward_loss[end]) || Validation Loss $(valLoss)")
         end
 
 

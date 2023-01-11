@@ -20,20 +20,20 @@ end
 
 
 
-# function loss(t::NODE, S, A, R, S′) 
-    
-#     Ŝ = fθ(vcat(S, A))
-#     return Flux.mse(Ŝ, S′)
-
-# end
-
 function loss(t::NODE, S, A, R, S′) 
     
-    dS = fθ(vcat(S, A))
-
-    return Flux.mse(S′ - S, dS)
+    Ŝ = fθ(vcat(S, A))
+    return Flux.mse(Ŝ, S′)
 
 end
+
+# function loss(t::NODE, S, A, R, S′) 
+    
+#     dS = fθ(vcat(S, A))
+
+#     return Flux.mse(S′ - S, dS)
+
+# end
 
 
 
@@ -68,7 +68,8 @@ function transition(t::T, s, a, r) where T <: TransitionType
     r̂ = Zygote.Buffer(r)
     state = s[:,1]
     for i in collect(1:length(a))
-        state = fθ(vcat(state, a[:,i]))
+        ds = fθ(vcat(state, a[:,i]))
+        state = state + ds
         ŝ[:,i] = state
         r̂[:,i] = Rϕ(vcat(s[:,i], a[:,i]))
     end
@@ -76,6 +77,42 @@ function transition(t::T, s, a, r) where T <: TransitionType
     return copy(ŝ), copy(r̂)
 
 end
+
+
+
+function transitionValidation(t::T, s, a, r) where T <: TransitionType
+
+    ŝ = similar(s)
+    r̂ = similar(r)
+    state = s[:,1]
+    for i in collect(1:length(a))
+        ds = fθ(vcat(state, a[:,i]))
+        state = state + ds
+        ŝ[:,i] = state
+        r̂[:,i] = Rϕ(vcat(s[:,i], a[:,i]))
+    end
+    
+    return ŝ, r̂
+
+end
+
+
+
+
+# function transition(t::T, s, a, r) where T <: TransitionType
+
+#     ŝ = Zygote.Buffer(s)
+#     r̂ = Zygote.Buffer(r)
+#     state = s[:,1]
+#     for i in collect(1:length(a))
+#         state = fθ(vcat(state, a[:,i]))
+#         ŝ[:,i] = state
+#         r̂[:,i] = Rϕ(vcat(s[:,i], a[:,i]))
+#     end
+    
+#     return copy(ŝ), copy(r̂)
+
+# end
 
 
 
@@ -178,4 +215,4 @@ end
 # function euler(s, a)
 #     x = vcat(s, a)
 #     return s + p.dT * fθ(x)
-# end
+# end   

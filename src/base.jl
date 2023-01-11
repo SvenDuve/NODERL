@@ -37,6 +37,7 @@
     dT::Float32 = 0.01
     model_loss::Array = []
     reward_loss::Array = []
+    validation_loss::Array = []
     total_rewards::Array = []
     world_rewards::Array = []
 end

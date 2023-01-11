@@ -156,11 +156,11 @@ showResults(DDPG(), p)
 
 
 
-p, fθ, Rϕ = trainLearner(Learner(NODEModel(), Online(), Randomized()), 
+p, fθ, Rϕ = trainLearner(Learner(NODEModel(), Episodic(), Randomized()), 
                 Parameter(batch_size=128,
                 max_episodes_length=999,
-                Sequences=200,
-                dT = 1, 
+                Sequences=1000,
+                dT = 0.003, 
                 η_node = 0.001,
                 η_reward = 0.0002,        
                 reward_hidden=[(32, 32)],
@@ -169,39 +169,49 @@ p, fθ, Rϕ = trainLearner(Learner(NODEModel(), Online(), Randomized()),
 
 
 
-
-
-
-p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()), 
-                Parameter(batch_size=1,
-                batch_length=40,
-                max_episodes_length=999,
-                Sequences=200,
-                dT = 0.003,
-                η_node = 0.001,
-                η_reward = 0.0002, 
-                reward_hidden=[(32, 32)],
-                dynode_hidden=[(32, 32)]));        
-
-
 using Plots
-showLoss(p)
-
 using Statistics
-
-
-
 meanModelLoss = [mean(p.model_loss[i-9:i]) for i in collect(10:length(p.model_loss))]
 meanRewardLoss = [mean(p.reward_loss[i-9:i]) for i in collect(10:length(p.reward_loss))]
                 
                 
 plot(meanModelLoss, c=:red)
 plot!(twinx(), meanRewardLoss, c=:green)
-                
 
-     
-                
-                
 
+
+
+p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()), 
+                Parameter(environment="Pendulum-v1",
+                batch_size_episodic=64, #64
+                batch_length=40,
+                max_episodes_length=200,
+                Sequences=200, #200
+                dT = 0.003,
+                η_node = 0.001,
+                η_reward = 0.0001, #0.0002
+                reward_hidden=[(32, 32)],
+                dynode_hidden=[(32, 32)]));        
+
+
+using Plots
+using Statistics
+
+
+
+meanModelLoss = [mean(p.model_loss[i-9:i]) for i in collect(10:length(p.model_loss))]
+meanRewardLoss = [mean(p.reward_loss[i-9:i]) for i in collect(10:length(p.reward_loss))]
+
+
+plot(meanModelLoss, c=:red, label="Model Loss")
+plot!(collect(range(1,191,20)), p.validation_loss, c=:blue, label="Model Val Loss")
+plot!(twinx(), meanRewardLoss, c=:green, label="Reward Loss")
+
+
+
+
+
+
+showLoss(p)
 
 
