@@ -182,14 +182,15 @@ plot!(twinx(), meanRewardLoss, c=:green)
 
 
 p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()), 
-                Parameter(environment="Pendulum-v1",
-                batch_size_episodic=64, #64
-                batch_length=40,
-                max_episodes_length=200,
+                #Parameter(environment="Pendulum-v1",
+                Parameter(environment="MountainCarContinuous-v0",
+                batch_size_episodic=1, #64
+                batch_length=10,
+                max_episodes_length=999,
                 Sequences=200, #200
-                dT = 0.003,
-                η_node = 0.001,
-                η_reward = 0.0001, #0.0002
+                dT = 0.03,
+                η_node = 0.0005,
+                η_reward = 0.0002, #0.0002
                 reward_hidden=[(32, 32)],
                 dynode_hidden=[(32, 32)]));        
 
