@@ -1,4 +1,6 @@
 
+## Basic DDPG Training Algorithm
+
 function train(algorithm::DDPG, l::Learner)
 
     scores = zeros(100)
@@ -13,6 +15,7 @@ function train(algorithm::DDPG, l::Learner)
         for (s, a, r, s′, t) in ep.episode
 
             remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
+            p.env_steps += 1
             p.frames += 1
 
             # if length(𝒟) >= p.train_start# && π.train
@@ -25,10 +28,8 @@ function train(algorithm::DDPG, l::Learner)
                 Y = R + p.γ * V′
 
                 # critic
-                x = deepcopy(params(Qθ))
                 dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
                 update!(Optimise.Adam(p.η_critic), Flux.params(Qθ), dθ)
-                @show x == params(Qθ)
                 # actor
                 dϕ = gradient(() -> -loss(Actor(), S), Flux.params(μϕ))
                 update!(Optimise.Adam(p.η_actor), Flux.params(μϕ), dϕ)
@@ -50,6 +51,7 @@ function train(algorithm::DDPG, l::Learner)
         idx = idx % 100 + 1
         avg = mean(scores)
         if (e-1) % 10 == 0
+            showReward(algorithm) # Function to replace below output
             println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
         end
         e += 1
@@ -60,6 +62,8 @@ function train(algorithm::DDPG, l::Learner)
 
 end
 
+
+## Adjusted training Algorithm for the combined Agent
 function trainDDPG(algorithm::modelDDPG) 
 
 
@@ -92,7 +96,7 @@ end
 
 
 
-
+# Pure NODE Model learning in online fashion, not usable at the moment
 function train(algorithm::NODEModel, l::Learner)
 
     # scores = zeros(100)
@@ -139,7 +143,7 @@ function train(algorithm::NODEModel, l::Learner)
 end
 
 
-
+# Algorithm to learn the model 
 function train(algorithm::DynaWorldModel, l::Learner)
 
 
@@ -198,7 +202,7 @@ end
 
 
 
-
+# Model retrain 
 function retrain(algorithm::DynaWorldModel, l::Learner)
 
 
@@ -232,6 +236,96 @@ end
 
 
 
+
+function trainOnModel(algorithm::DDPG, l::Learner) #
+
+    scores = zeros(100)
+    e = 1
+    idx = 1
+
+    function getModelEpisode(env, l, p)
+        ep = []
+
+        s = env.reset()
+
+        for i in 1:400
+
+            a = Vector{Float32}([rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)]) 
+            s′ = Vector{Float32}(s .+ 0.01 .* fθ(vcat(s, a)))
+            r = Rϕ(vcat(s, a)) |> first |> Float64
+            # randS = [rand(Uniform(el[1], el[2])) for el in zip(p.state_low, p.state_high)]
+            # randA = [rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)]
+            append!(ep, [(s, a, r, s′, false)])
+            s = s′
+
+        end
+
+        return ep
+
+    end
+
+    while e <= p.max_episodes
+
+        epi = getModelEpisode(env, l, p)
+
+
+        for (s, a, r, s′, t) in epi
+
+            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
+            p.frames += 1
+
+            # if length(𝒟) >= p.train_start# && π.train
+            if p.frames >= p.train_start# && π.train
+
+                S, A, R, S′ = sampleBuffer(l.serial)
+
+                A′ = μϕ′(S′)
+                V′ = Qθ′(vcat(S′, A′))
+                Y = R + p.γ * V′
+
+                # critic
+                dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
+                update!(Optimise.Adam(p.η_critic), Flux.params(Qθ), dθ)
+                # actor
+                dϕ = gradient(() -> -loss(Actor(), S), Flux.params(μϕ))
+                update!(Optimise.Adam(p.η_actor), Flux.params(μϕ), dϕ)
+
+
+                for (base, target) in zip(Flux.params(Qθ), Flux.params(Qθ′))
+                    target .= p.τ_critic * base .+ (1 - p.τ_critic) * target
+                end
+
+                for (base, target) in zip(Flux.params(μϕ), Flux.params(μϕ′))
+                    target .= p.τ_actor * base .+ (1 - p.τ_actor) * target
+                end
+            end
+            
+        end
+
+        ep = Episode(env, l, p)()
+
+        for (s, a, r, s′, t) in ep.episode
+            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
+            p.env_steps += 1
+        end
+        
+
+        scores[idx] = ep.total_reward
+        idx = idx % 100 + 1
+        avg = mean(scores)
+        if (e-1) % 10 == 0
+            showReward(algorithm) # Function to replace below output
+            println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
+        end
+        e += 1
+
+        append!(p.total_rewards, ep.total_reward)
+
+    end
+
+
+
+end
 
 
 

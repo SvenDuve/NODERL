@@ -39,3 +39,33 @@ function replPlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
     UnicodePlots.savefig(diag, "output/" * file * ".txt")
 
 end
+
+
+function showReward(m::Agent) end
+
+
+function showAgent(policy, p::Parameter) 
+
+
+    gym = pyimport("gym")
+    env = gym.make(p.environment)
+    p = resetParameters(p)
+
+
+    s = env.reset()
+    R = []
+    notSolved = true
+
+    while notSolved
+
+        a = NODERL.action(Clamped(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
+
+        s′, r, t, _ = env.step(a)
+        append!(R, r)
+        env.render()
+        sleep(0.1)
+        s = s′
+        notSolved = !t
+    end
+
+end

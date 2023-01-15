@@ -72,7 +72,10 @@ export RL,
         NODEArchitecture,
         showResults,
         replPlots,
-        getName
+        getName,
+        agentTrainedModel,
+        modelTrainedAgent,
+        trainOnModel
 
 
 greet() = print("Hello World!")

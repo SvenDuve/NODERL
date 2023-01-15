@@ -2,6 +2,8 @@
 @with_kw mutable struct Parameter
     environment::String = "MountainCarContinuous-v0"
     state_size::Int = 2
+    state_high::Array = [0.6, 0.07]
+    state_low::Array = [-1.2, -0.07]
     action_size::Int = 1
     action_bound::Float64 = 1.0
     action_bound_high::Array = [1.0]
@@ -48,6 +50,8 @@ end
 function resetParameters(p)
     
     newP = Parameter(p; state_size=env.observation_space.shape[1],
+        state_high = env.observation_space.high,
+        state_low = env.observation_space.low,
         action_size=env.action_space.shape[1],
         action_bound=env.action_space.high[1],
         action_bound_high=env.action_space.high,
@@ -122,10 +126,13 @@ function (e::Episode)()
         s = s′
         if t
             append!(e.p.episode_length, i) 
+            e.env.close()
             return e
             #s = env.reset()
         end
     end
+
+    e.env.close()
 
     return e
 
@@ -140,6 +147,10 @@ end
 
 function action(t::ActionSelection, m::Bool, s::Vector{Float32}, p::Parameter)
     return env.action_space.sample()
+end
+
+function action(t::Randomized, m::Bool, s::Vector{Float32}, p::Parameter)
+    return env.action_space.sample() .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m
 end
 
 function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 

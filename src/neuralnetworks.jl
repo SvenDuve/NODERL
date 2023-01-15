@@ -25,7 +25,8 @@ function setNetwork(nn::Reward)
 
     return Chain(Dense(p.state_size + p.action_size, p.reward_hidden[1][1], relu),
                 Chain([Dense(el[1], el[2], relu) for el in p.reward_hidden]...),
-                Dense(p.reward_hidden[end][2], 1, tanh))
+                # Dense(p.reward_hidden[end][2], 1, tanh))
+                Dense(p.reward_hidden[end][2], 1))
 
 
 end
@@ -35,7 +36,7 @@ function setNetwork(nn::T) where T <: NODEArchitecture
 
     down = Dense(p.state_size + p.action_size, p.dynode_hidden[1][1])
 
-    dudt = Chain([Dense(el[1], el[2], relu) for el in p.dynode_hidden]...)
+    dudt = Chain([Dense(el[1], el[2], elu) for el in p.dynode_hidden]...)
         
 #    nn_ode = NeuralODE(dudt, (0.0f0, 1.0f0), Tsit5(),
     nn_ode = NeuralODE(dudt, (0.0f0, p.dT), Tsit5(),
