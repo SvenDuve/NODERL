@@ -50,9 +50,9 @@ function train(algorithm::DDPG, l::Learner)
         scores[idx] = ep.total_reward
         idx = idx % 100 + 1
         avg = mean(scores)
-        if (e-1) % 10 == 0
-            showReward(algorithm) # Function to replace below output
-            println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
+        if (e-1) % 50 == 0
+            showReward(algorithm, e, avg, p) # Function to replace below output
+            #println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
         end
         e += 1
 
@@ -177,7 +177,7 @@ function train(algorithm::DynaWorldModel, l::Learner)
 
         # some validation
 
-        if j % 10 == 0
+        if j % 50 == 0
             S, A, R, S′ = sampleBuffer(l.serial)
             Ŝ = similar(S)
             R̂ = similar(R)
@@ -189,7 +189,7 @@ function train(algorithm::DynaWorldModel, l::Learner)
             valLoss = 1/p.batch_size_episodic * (1 / p.state_size) * (1 / p.batch_length) * sum(abs.(copy(Ŝ) - S′))
             append!(p.validation_loss, valLoss)
 
-            println("Iteration $j || Model loss $(p.model_loss[end]) || Reward loss $(p.reward_loss[end]) || Validation Loss $(valLoss)")
+            println("Iteration $j || Model loss $(round(p.model_loss[end], digits=4)) || Reward loss $(round(p.reward_loss[end], digits=4)) || Validation Loss $(round(valLoss, digits=4))")
         end
 
 
@@ -313,9 +313,9 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
         scores[idx] = ep.total_reward
         idx = idx % 100 + 1
         avg = mean(scores)
-        if (e-1) % 10 == 0
-            showReward(algorithm) # Function to replace below output
-            println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
+        if (e-1) % 25 == 0
+            #showReward(algorithm, e, avg, p) # Function to replace below output
+            println("Episode: $e | Score: $(round(ep.total_reward, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
         end
         e += 1
 

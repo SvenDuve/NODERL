@@ -41,7 +41,9 @@ function replPlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
 end
 
 
-function showReward(m::Agent) end
+function showReward(m::Agent, e, avg, p) 
+    println("Episode: $e | Score: $(round(ep.total_reward, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
+end
 
 
 function showAgent(policy, p::Parameter) 

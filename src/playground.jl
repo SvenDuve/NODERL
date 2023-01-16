@@ -32,6 +32,8 @@
 #environment="Pendulum-v1"
 #environment="BipedalWalker-v3"
 
+# wgt_act0.09444wgt_cr0.15778lr_no0.001lr_re0.00022lr_act0.0006lr_cr0.001
+
 pms = Parameter(environment="MountainCarContinuous-v0",
                 batch_size_episodic=1,
                 batch_size=128,
@@ -40,14 +42,14 @@ pms = Parameter(environment="MountainCarContinuous-v0",
                 train_start = 1000,
                 max_episodes = 200,
                 max_episodes_length=999,
-                Sequences=600, #200
+                Sequences=100, #200
                 dT = 0.01,
-                η_node = 0.00025,
-                η_reward = 0.001, #0.0002
-                η_actor = 0.0001,
-                η_critic = 0.0002,
-                τ_actor=0.1,
-                τ_critic=0.2,
+                η_node = 0.001,
+                η_reward = 0.00022, #0.0002
+                η_actor = 0.0006,
+                η_critic = 0.001,
+                τ_actor=0.095,
+                τ_critic=0.16,
                 reward_hidden=[(64, 64)],
                 dynode_hidden=[(40, 40), (40, 40)],
                 critic_hidden = [(32, 32)],
@@ -59,8 +61,9 @@ p, μϕ = MBDDPGAgent(Learner(DynaWorldModel(), Episodic(), Randomized()),
             Learner(DDPG(), Online(), Clamped()), 
             pms)
 
-
-
+#38300
+#40933
+p.env_steps
             
 
 using Conda
@@ -106,51 +109,6 @@ env.close()
 #                 reward_hidden=[(32, 32)],
 #                 dynode_hidden=[(32, 32)]));    
 
-
-
-p, buffer_one, buffer_two = MBDDPGAgent(Learner(DynaWorldModel(), Episodic(), Randomized()), 
-            Learner(DDPG(), Online(), Clamped()), 
-            Parameter(environment="MountainCarContinuous-v0",
-            train_start = 1000,
-            max_episodes = 100,
-            max_episodes_length = 999,
-            max_episodes_length_mb = 998,
-            Sequences = 100, # DynaWorld Learning #100
-            dT=0.003,
-            η_node=0.001,
-            η_reward = 0.0002,
-            trainloops_mb = 100, # model based learner #10
-            batch_size_episodic=1,
-            batch_size=64,
-            reward_hidden=[(32, 32), (32, 32)],
-            dynode_hidden=[(32, 32), (32, 32)],
-            η_actor = 0.001,
-            η_critic = 0.001,
-            τ_actor=0.1,
-            τ_critic=0.025));
-
-
-
-p, μϕ = trainLearner(DDPG_actor01_critic0025[1],
-                    DDPG_actor01_critic0025[2])
-
-replPlots(DDPG_actor01_critic0025[1].algorithm, 
-            @getName(DDPG_actor01_critic0025), p)
-
-
-
-p, μϕ = trainLearner(Learner(DDPG(), 
-                Online(), 
-                Clamped()), 
-                Parameter(environment="MountainCarContinuous-v0",
-                train_start = 10000,
-                max_episodes = 20,
-                max_episodes_length = 1000,
-                batch_size=128,
-                η_actor = 0.001,
-                η_critic = 0.001,
-                τ_actor=0.1,
-                τ_critic=0.025))
 
 
 
@@ -378,13 +336,3 @@ p, μϕ = modelTrainedAgent(Learner(DDPG(),
 
 
 # Env_steps appr. 35k with perfect trained agent trained model trained agent
-
-
-
-foo = 5
-bar = 10 
-bas = 20
-
-macro NameVal(arg)
-    string.(arg) .* string.(eval.(arg))
-end
