@@ -68,4 +68,13 @@ function showAgent(policy, p::Parameter)
         notSolved = !t
     end
 
+    env.close()
+
 end
+
+
+function storeModel(policy, file, p) 
+    @save file policy
+end
+
+

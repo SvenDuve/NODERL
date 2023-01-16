@@ -378,3 +378,13 @@ p, μϕ = modelTrainedAgent(Learner(DDPG(),
 
 
 # Env_steps appr. 35k with perfect trained agent trained model trained agent
+
+
+
+foo = 5
+bar = 10 
+bas = 20
+
+macro NameVal(arg)
+    string.(arg) .* string.(eval.(arg))
+end

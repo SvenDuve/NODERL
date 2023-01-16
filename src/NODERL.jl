@@ -15,6 +15,7 @@ using DiffEqFlux, DifferentialEquations
 using Statistics
 using Plots
 using UnicodePlots
+using BSON: @save
 
 
 include("types.jl")
@@ -75,7 +76,8 @@ export RL,
         getName,
         agentTrainedModel,
         modelTrainedAgent,
-        trainOnModel
+        trainOnModel,
+        storeModel
 
 
 greet() = print("Hello World!")
