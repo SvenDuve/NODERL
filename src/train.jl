@@ -51,7 +51,8 @@ function train(algorithm::DDPG, l::Learner)
         idx = idx % 100 + 1
         avg = mean(scores)
         if (e-1) % 50 == 0
-            showReward(algorithm, e, avg, p) # Function to replace below output
+            #showReward(algorithm, e, avg, p) # Function to replace below output
+            println("Episode: $e | Score: $(round(ep.total_reward, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
             #println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
         end
         e += 1

@@ -77,8 +77,7 @@ function MBDDPGAgent(model::Learner, agent::Learner, pms::Parameter)
 
     p, fθ, Rϕ = trainLearner(model, pms)
 
-    p, μϕ = modelTrainedAgent(agent,
-                                pms, fθ, Rϕ)
+    p, μϕ = modelTrainedAgent(agent, pms, fθ, Rϕ)
 
     return p, μϕ
 

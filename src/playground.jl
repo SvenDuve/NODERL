@@ -42,7 +42,7 @@ pms = Parameter(environment="MountainCarContinuous-v0",
                 train_start = 1000,
                 max_episodes = 200,
                 max_episodes_length=999,
-                Sequences=100, #200
+                Sequences=600, #200
                 dT = 0.01,
                 η_node = 0.001,
                 η_reward = 0.00022, #0.0002
@@ -53,13 +53,16 @@ pms = Parameter(environment="MountainCarContinuous-v0",
                 reward_hidden=[(64, 64)],
                 dynode_hidden=[(40, 40), (40, 40)],
                 critic_hidden = [(32, 32)],
-                actor_hidden = [(64, 64)]) 
+                actor_hidden = [(64, 64)]); 
 
 
 
 p, μϕ = MBDDPGAgent(Learner(DynaWorldModel(), Episodic(), Randomized()), 
             Learner(DDPG(), Online(), Clamped()), 
-            pms)
+            pms);
+
+
+showResults(DDPG(), p)
 
 #38300
 #40933
@@ -68,6 +71,66 @@ p.env_steps
 
 using Conda
 using PyCall
+
+
+gym = pyimport("gym")
+global env = gym.make(p.environment)
+
+
+s = env.reset()
+R = []
+notSolved = true
+
+while notSolved
+
+    a = NODERL.action(Clamped(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
+    # a = NODERL.action(Randomized(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
+
+    s′, r, t, _ = env.step(a)
+    append!(R, r)
+    env.render()
+    sleep(0.1)
+    s = s′
+    notSolved = !t
+end
+
+env.close()
+
+
+
+
+
+pms = Parameter(environment="Pendulum-v1",
+                batch_size_episodic=1,
+                batch_size=128,
+                batch_length=40,
+                noise_type="gaussian",
+                train_start = 0,
+                max_episodes = 200,
+                max_episodes_length=999,
+                Sequences=600, #200
+                dT = 0.01,
+                η_node = 0.001,
+                η_reward = 0.00022, #0.0002
+                η_actor = 0.0006,
+                η_critic = 0.001,
+                τ_actor=0.095,
+                τ_critic=0.16,
+                reward_hidden=[(64, 64)],
+                dynode_hidden=[(40, 40), (40, 40)],
+                critic_hidden = [(32, 32)],
+                actor_hidden = [(64, 64)]); 
+
+
+
+p, μϕ = MBDDPGAgent(Learner(DynaWorldModel(), Episodic(), Randomized()), 
+            Learner(DDPG(), Online(), Clamped()), 
+            pms);
+
+#38300
+#40933
+p.env_steps
+
 
 
 gym = pyimport("gym")
@@ -116,7 +179,7 @@ p, μϕ = trainLearner(Learner(DDPG(),
                 Online(),
                 Clamped()),
                 Parameter(environment="MountainCarContinuous-v0",
-                train_start = 10000,
+                train_start = 0,
                 max_episodes = 200,
                 noise_type = "none",
                 batch_size=128,
