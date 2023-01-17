@@ -34,7 +34,7 @@ function replPlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
     
     diag = lineplot(collect(1:length(p.total_rewards)), 
                     Array{Float64}(p.total_rewards),
-                    title="Rewards")
+                    title="Rewards", color=:red)
     display(diag)
     UnicodePlots.savefig(diag, "output/" * file * ".txt")
 

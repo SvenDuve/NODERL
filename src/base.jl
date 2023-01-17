@@ -20,7 +20,9 @@
     max_episodes_length::Int = 1000
     max_episodes_length_mb::Int = 1000
     episode_length::Array = []
-    Sequences::Int = 10
+    Sequences::Int = 10 # # number of episodes to run for DynaWorldModel
+    model_episode_length::Int = 400 # Number of steps to simulate 
+    model_episode_retrain::Int = 50 # Number of episodes to retrain the model
     trainloops_mb::Int = 10
     critic_hidden::Array = [(200, 200)]
     actor_hidden::Array = [(200, 200)]
@@ -135,6 +137,30 @@ function (e::Episode)()
     e.env.close()
 
     return e
+
+end
+
+
+
+function getModelEpisode(env, l, p)
+    ep = []
+
+    s = env.reset()
+
+    for i in 1:p.model_episode_length
+
+        # a = Vector{Float32}([rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)]) 
+        a = Vector{Float32}(action(l.action_type, l.train, s, p))
+        s′ = Vector{Float32}(s .+ p.dT .* fθ(vcat(s, a)))
+        r = Rϕ(vcat(s, a)) |> first |> Float64
+        # randS = [rand(Uniform(el[1], el[2])) for el in zip(p.state_low, p.state_high)]
+        # randA = [rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)]
+        append!(ep, [(s, a, r, s′, false)])
+        s = s′
+
+    end
+
+    return ep
 
 end
 

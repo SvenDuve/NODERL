@@ -207,7 +207,7 @@ end
 function retrain(algorithm::DynaWorldModel, l::Learner)
 
 
-    for j in 1:40
+    for j in 1:p.model_episode_retrain
         
         S, A, R, S′ = sampleBuffer(Episodic())
 
@@ -226,8 +226,8 @@ function retrain(algorithm::DynaWorldModel, l::Learner)
         end
 
 
-        if j % 10 == 0
-            println("Retrain Iteration $j || Model loss $(p.model_loss[end]) || Reward loss $(p.reward_loss[end])")
+        if j % 25 == 0
+            println("Retrain Iteration $j || Model loss $(round(p.model_loss[end], digits=4)) || Reward loss $(round(p.reward_loss[end], digits=4))")
         end
 
 
@@ -244,26 +244,6 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
     e = 1
     idx = 1
 
-    function getModelEpisode(env, l, p)
-        ep = []
-
-        s = env.reset()
-
-        for i in 1:400
-
-            a = Vector{Float32}([rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)]) 
-            s′ = Vector{Float32}(s .+ 0.01 .* fθ(vcat(s, a)))
-            r = Rϕ(vcat(s, a)) |> first |> Float64
-            # randS = [rand(Uniform(el[1], el[2])) for el in zip(p.state_low, p.state_high)]
-            # randA = [rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)]
-            append!(ep, [(s, a, r, s′, false)])
-            s = s′
-
-        end
-
-        return ep
-
-    end
 
     while e <= p.max_episodes
 
@@ -309,8 +289,9 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
             remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
             p.env_steps += 1
         end
-        
 
+        
+        
         scores[idx] = ep.total_reward
         idx = idx % 100 + 1
         avg = mean(scores)
@@ -319,9 +300,13 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
             println("Episode: $e | Score: $(round(ep.total_reward, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
         end
         e += 1
-
+        
         append!(p.total_rewards, ep.total_reward)
-
+        
+        if l.model_retrain
+            retrain(DynaWorldModel(), l)
+        end
+        
     end
 
 

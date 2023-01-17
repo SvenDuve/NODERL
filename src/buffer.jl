@@ -61,12 +61,16 @@ end #sampleBuffer
 
 function sampleBuffer(m::Episodic)
 
+    #@show size(𝒟) p.episode_length p.batch_size_episodic
+
     start_Points = 1 .+ vcat(0, cumsum(p.episode_length)[1:end-1])
     end_Points = cumsum(p.episode_length)
 
     transInds = vcat([collect(el[1]:(el[2]-p.batch_length)+1) for el in zip(start_Points, end_Points)]...)
     indStart = sample(transInds, p.batch_size_episodic) # to set up dynode_batch_size -> 64 in the paper
     slices = [collect(i:i+p.batch_length-1) for i in indStart]
+
+    #@show size(slices)
 
     # the parameter to loop is S[:,:,i], this returns a matrix of an episode
     batch = 𝒟[vcat(slices...)]
@@ -77,6 +81,9 @@ function sampleBuffer(m::Episodic)
     S′ = reshape(hcat(X[4, :]...), (p.state_size, p.batch_length, p.batch_size_episodic))
     return (S, A, R, S′)
 end #sampleBuffer
+
+
+
 
 
 

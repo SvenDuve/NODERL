@@ -74,10 +74,11 @@ end
 
 mutable struct Learner <: RL
     train::Bool
+    model_retrain::Bool
     algorithm::RL
     serial::Process
     action_type::ActionSelection
     function Learner(algorithm::RL, serial::Process, action_type::ActionSelection)
-        return new(true, algorithm, serial, action_type)
+        return new(true, true, algorithm, serial, action_type)
     end
 end

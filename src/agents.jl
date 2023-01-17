@@ -53,7 +53,7 @@ function modelTrainedAgent(l::Learner, pms::Parameter, model, reward)
 
     setNoise(p)
 
-    global 𝒟 = []
+    #global 𝒟 = [] # Question, should we separate model and real experience
 
     setFunctionApproximation(l.algorithm)
 
