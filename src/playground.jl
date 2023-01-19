@@ -39,10 +39,10 @@ pms = Parameter(environment="MountainCarContinuous-v0",
                 batch_size=128,
                 batch_length=40,
                 noise_type="none",
-                train_start = 1000,
+                train_start = 0,
                 max_episodes = 200,
                 max_episodes_length=999,
-                Sequences=400, #200
+                Sequences=200, #200
                 model_episode_retrain = 10,
                 dT = 0.01,
                 η_node = 0.001,
@@ -51,10 +51,10 @@ pms = Parameter(environment="MountainCarContinuous-v0",
                 η_critic = 0.001,
                 τ_actor=0.12,
                 τ_critic=0.01,
-                reward_hidden=[(64, 64)],
-                dynode_hidden=[(40, 40), (40, 40)],
-                critic_hidden = [(32, 32)],
-                actor_hidden = [(64, 64)]); 
+                reward_hidden=[(32, 32)],
+                dynode_hidden=[(64, 64)],
+                critic_hidden = [(16, 16)],
+                actor_hidden = [(48, 48)]); 
 
 
 
@@ -177,7 +177,7 @@ env.close()
 
 
 
-p, μϕ = trainLearner(Learner(DDPG(),
+q, μϕ = trainLearner(Learner(DDPG(),
                 Online(),
                 Clamped()),
                 Parameter(environment="MountainCarContinuous-v0",
@@ -191,7 +191,7 @@ p, μϕ = trainLearner(Learner(DDPG(),
                 τ_critic=0.025));
 
 
-showResults(DDPG(), p)
+showResults(DDPG(), q)
 
 
 p, μϕ = trainLearner(Learner(DDPG(),

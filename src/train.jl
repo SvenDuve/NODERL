@@ -288,6 +288,30 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
         for (s, a, r, s′, t) in ep.episode
             remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
             p.env_steps += 1
+
+
+            S, A, R, S′ = sampleBuffer(l.serial)
+
+            A′ = μϕ′(S′)
+            V′ = Qθ′(vcat(S′, A′))
+            Y = R + p.γ * V′
+
+            # critic
+            dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
+            update!(Optimise.Adam(p.η_critic), Flux.params(Qθ), dθ)
+            # actor
+            dϕ = gradient(() -> -loss(Actor(), S), Flux.params(μϕ))
+            update!(Optimise.Adam(p.η_actor), Flux.params(μϕ), dϕ)
+
+
+            for (base, target) in zip(Flux.params(Qθ), Flux.params(Qθ′))
+                target .= p.τ_critic * base .+ (1 - p.τ_critic) * target
+            end
+
+            for (base, target) in zip(Flux.params(μϕ), Flux.params(μϕ′))
+                target .= p.τ_actor * base .+ (1 - p.τ_actor) * target
+            end
+
         end
 
         
