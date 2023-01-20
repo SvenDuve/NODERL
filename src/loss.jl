@@ -67,7 +67,8 @@ function transition(t::T, s, a, r) where T <: TransitionType
     ŝ = Zygote.Buffer(s)
     r̂ = Zygote.Buffer(r)
     state = s[:,1]
-    for i in collect(1:length(a))
+    for i in collect(1:p.batch_length)
+        # @show size(vcat(state, a[:,i]))
         ds = fθ(vcat(state, a[:,i]))
         state = state + ds
         ŝ[:,i] = state
@@ -85,7 +86,7 @@ function transitionValidation(t::T, s, a, r) where T <: TransitionType
     ŝ = similar(s)
     r̂ = similar(r)
     state = s[:,1]
-    for i in collect(1:length(a))
+    for i in collect(1:p.batch_length)
         ds = fθ(vcat(state, a[:,i]))
         state = state + ds
         ŝ[:,i] = state

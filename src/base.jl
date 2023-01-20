@@ -170,7 +170,6 @@ function action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
     return vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
 end
 
-
 function action(t::ActionSelection, m::Bool, s::Vector{Float32}, p::Parameter)
     return env.action_space.sample()
 end

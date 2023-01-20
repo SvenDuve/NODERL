@@ -40,9 +40,9 @@ pms = Parameter(environment="MountainCarContinuous-v0",
                 batch_length=40,
                 noise_type="none",
                 train_start = 0,
-                max_episodes = 200,
+                max_episodes = 2,
                 max_episodes_length=999,
-                Sequences=200, #200
+                Sequences=2, #200
                 model_episode_retrain = 10,
                 dT = 0.01,
                 η_node = 0.001,
@@ -68,7 +68,7 @@ showResults(DDPG(), p)
 #38300
 #40933
 p.env_steps
-            
+
 
 using Conda
 using PyCall
@@ -83,10 +83,10 @@ R = []
 notSolved = true
 
 while notSolved
-
+    
     a = NODERL.action(Clamped(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
     # a = NODERL.action(Randomized(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
-
+    
     s′, r, t, _ = env.step(a)
     append!(R, r)
     env.render()
@@ -98,6 +98,36 @@ end
 env.close()
 
 
+pms = Parameter(environment="BipedalWalker-v3",
+                batch_size_episodic=1,
+                batch_size=128,
+                batch_length=40,
+                noise_type="gaussian",
+                train_start = 0,
+                max_episodes = 200,
+                max_episodes_length=5000,
+                Sequences=400, #200
+                model_episode_retrain = 10,
+                dT = 0.01,
+                η_node = 0.001,
+                η_reward = 0.0001, #0.0002
+                η_actor = 0.0004,
+                η_critic = 0.001,
+                τ_actor=0.12,
+                τ_critic=0.01,
+                reward_hidden=[(32, 32)],
+                dynode_hidden=[(64, 64)],
+                critic_hidden = [(16, 16)],
+                actor_hidden = [(48, 48)]); 
+
+
+
+p, μϕ = MBDDPGAgent(Learner(DynaWorldModel(), Episodic(), Randomized()), 
+            Learner(DDPG(), Online(), Clamped()), 
+            pms);
+
+
+showResults(DDPG(), p)
 
 
 
