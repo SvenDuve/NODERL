@@ -18,22 +18,29 @@ function objective(τ_actor, τ_critic, η_actor, η_critic)
     p, μϕ = trainLearner(Learner(DDPG(),
     Online(),
     Clamped()),
-    Parameter(environment="MountainCarContinuous-v0",
-    train_start = 10000,
+    Parameter(environment="LunarLander-v2",
+    train_start = 1000,
     max_episodes = 10,
     noise_type = "none",
     η_actor = η_actor,
     η_critic = η_critic,
     τ_actor= τ_actor,
     τ_critic= τ_critic,
-    critic_hidden = [(32, 32), (32, 32)],
-    actor_hidden = [(32, 32), (32, 32)]));
+    critic_hidden = [(32, 32)],
+    actor_hidden = [(32, 32)]));
 
     # file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
 
-    replPlots(DDPG(), "file", p)
+    nms = ["τ_actor", "τ_critic", "η_actor", "η_critic"]
+    vls = [τ_actor, τ_critic, η_actor, η_critic]
+    file = string.([n * string(round(v, digits=5)) for (n, v) in zip(nms, vls)]...)
+    
+    storePlots(DDPG(), "LL" * file, p)
+    storeModel(μϕ, "output/" * file * ".bson", p)
 
-    return -sum(p.total_rewards[end-10, end])
+
+
+    return -sum(p.total_rewards)
 
 
 end
@@ -54,7 +61,7 @@ ho = @hyperopt for i=20,
     @show objective(τ_actor, τ_critic, η_actor, η_critic)
 end
 
-open("output/resutl.txt", "w") do io
+open("output/resultLL.txt", "w") do io
     println(io, ho)
 end
 

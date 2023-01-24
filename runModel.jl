@@ -18,7 +18,8 @@ end
 function objective(batch_length, dT, η_node, η_reward) 
 
     p, μϕ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()),
-                        Parameter(batch_size=1,
+                        Parameter(environment="LunarLander-v2",
+                                    batch_size=1,
                                     batch_length=batch_length,
                                     max_episodes_length=999,
                                     Sequences=20,
@@ -30,9 +31,15 @@ function objective(batch_length, dT, η_node, η_reward)
 
     # file = "lract" * string(η_actor) * "lrcr" * string(η_critic) * "taua" * string(τ_actor) * "tcr" = string(τ_critic)
 
-    #replPlots(DDPG(), "file", p)
+    nms = ["batch_length", "dT", "η_node", "η_reward"]
+    vls = [batch_length, dT, η_node, η_reward]
+    file = string.([n * string(v) for (n, v) in zip(nms, vls)]...)
+    
+    storePlots(DynaWorldModel(), "LL_model" * file, p)
+    #storeModel(μϕ, "output/" * file * ".bson", p)
 
-    return sum(p.model_loss[end-10, end])
+
+    return sum(p.model_loss)
 
 
 end
@@ -53,14 +60,14 @@ ho = @phyperopt for i=20,
     @show objective(batch_length, dT, η_node, η_reward)
 end
 
-open("output/result_model.txt", "w") do io
+open("output/LL_model.txt", "w") do io
     println(io, ho)
 end
 
 
 pl = plot(ho);
 
-Plots.savefig(pl, "output/plot_model.png")
+Plots.savefig(pl, "output/plot_LL_model.png")
 
 
 best_params, min_f = ho.minimizer, ho.minimum

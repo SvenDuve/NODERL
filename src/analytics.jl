@@ -41,6 +41,30 @@ function replPlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
 end
 
 
+function storePlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
+    
+    diag = plot(collect(1:length(p.total_rewards)), 
+                    Array{Float64}(p.total_rewards),
+                    title="Rewards", color=:red)
+    #display(diag)
+    Plots.savefig(diag, "output/" * file * ".png")
+
+end
+
+
+function storePlots(t::T, file, p) where T <: NODEArchitecture
+    
+    diag = plot(collect(1:length(p.model_loss)), 
+                    Array{Float64}(p.model_loss),
+                    title="Model Loss", color=:red)
+    #display(diag)
+    Plots.savefig(diag, "output/" * file * ".png")
+
+end
+
+
+
+
 function showReward(m::Agent, e, avg, p) 
     println("Episode: $e | Score: $(round(ep.total_reward, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
 end

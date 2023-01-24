@@ -77,7 +77,8 @@ export RL,
         agentTrainedModel,
         modelTrainedAgent,
         trainOnModel,
-        storeModel
+        storeModel,
+        storePlots
 
 
 greet() = print("Hello World!")

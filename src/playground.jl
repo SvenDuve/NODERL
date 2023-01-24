@@ -34,16 +34,16 @@
 
 # wgt_act0.09444wgt_cr0.15778lr_no0.001lr_re0.00022lr_act0.0006lr_cr0.001
 
-pms = Parameter(environment="MountainCarContinuous-v0",
+pms = Parameter(environment="LunarLander-v2",
                 batch_size_episodic=1,
                 batch_size=128,
                 batch_length=40,
                 noise_type="none",
                 train_start = 0,
-                max_episodes = 2,
-                max_episodes_length=999,
-                Sequences=2, #200
-                model_episode_retrain = 10,
+                max_episodes = 200,
+                max_episodes_length=400,
+                Sequences=400, #200
+                model_episode_retrain = 20,
                 dT = 0.01,
                 η_node = 0.001,
                 η_reward = 0.0001, #0.0002
@@ -53,8 +53,8 @@ pms = Parameter(environment="MountainCarContinuous-v0",
                 τ_critic=0.01,
                 reward_hidden=[(32, 32)],
                 dynode_hidden=[(64, 64)],
-                critic_hidden = [(16, 16)],
-                actor_hidden = [(48, 48)]); 
+                critic_hidden = [(32, 32)],
+                actor_hidden = [(64, 64)]); 
 
 
 
@@ -102,12 +102,12 @@ pms = Parameter(environment="BipedalWalker-v3",
                 batch_size_episodic=1,
                 batch_size=128,
                 batch_length=40,
-                noise_type="gaussian",
+                noise_type="none",
                 train_start = 0,
                 max_episodes = 200,
-                max_episodes_length=5000,
-                Sequences=400, #200
-                model_episode_retrain = 10,
+                max_episodes_length=1000,
+                Sequences=600, #200
+                model_episode_retrain = 50,
                 dT = 0.01,
                 η_node = 0.001,
                 η_reward = 0.0001, #0.0002
@@ -163,8 +163,8 @@ p, μϕ = MBDDPGAgent(Learner(DynaWorldModel(), Episodic(), Randomized()),
 #40933
 p.env_steps
 
-
-
+using Conda
+using PyCall
 gym = pyimport("gym")
 global env = gym.make(p.environment)
 
@@ -246,19 +246,20 @@ showResults(DDPG(), p)
 p, μϕ = trainLearner(Learner(DDPG(),
                 Online(),
                 Clamped()),
-                Parameter(environment="MountainCarContinuous-v0",
-                train_start = 10000,
-                max_episodes = 200,
+                # Parameter(environment="MountainCarContinuous-v0",
+                Parameter(environment="LunarLander-v2",
+                train_start = 1000,
+                max_episodes = 20,
                 # critic_hidden = [(64, 128), (128, 64)],
                 # actor_hidden = [(64, 128), (128, 64)],
-                noise_type = "none",
+                noise_type = "gaussian",
                 batch_size=128,
-                η_actor = 0.0005,
+                η_actor = 0.0001,
                 η_critic = 0.0002,
                 τ_actor=0.01,
                 τ_critic=0.2,
-                critic_hidden = [(32, 32), (32, 32)],
-                actor_hidden = [(32, 32), (32, 32)]))
+                critic_hidden = [(200, 200)],
+                actor_hidden = [(200, 200)]))
 
 # 48283
 showResults(DDPG(), p)
@@ -269,7 +270,7 @@ showResults(DDPG(), p)
 
 p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()), 
                 # Parameter(environment="Pendulum-v1",
-                Parameter(environment="MountainCarContinuous-v0",
+                Parameter(environment="LunarLander-v2",
                 batch_size_episodic=1, #64
                 batch_length=40,
                 noise_type="none",
@@ -278,7 +279,7 @@ p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()),
                 dT = 0.01,
                 η_node = 0.00045,
                 η_reward = 0.001, #0.0002
-                reward_hidden=[(64, 64)],
+                reward_hidden=[(256, 256), (256, 256)],
                 dynode_hidden=[(20, 20), (20, 20)]));        
 
 
@@ -431,3 +432,27 @@ p, μϕ = modelTrainedAgent(Learner(DDPG(),
 
 
 # Env_steps appr. 35k with perfect trained agent trained model trained agent
+
+using Flux, Flux.Optimise
+import Flux.params
+
+Chain(Dense(p.state_size, p.actor_hidden[1][1]), BatchNorm(p.actor_hidden[1][1], relu),
+                Chain([Dense(el[1], el[2], relu) for el in p.actor_hidden]...),
+                Dense(p.actor_hidden[end][2], p.action_size, tanh),
+                x -> x * p.action_bound)
+
+
+
+Chain(Dense(p.state_size, p.actor_hidden[1][1]), BatchNorm(p.actor_hidden[1][1], relu), 
+    Chain(
+        Dense(p.actor_hidden[1][1], p.actor_hidden[1][2]),
+        BatchNorm(p.actor_hidden[1][2], relu)))
+
+
+
+m = Chain(
+    Dense(28^2, 64),
+    BatchNorm(64, relu),
+    Dense(64, 10),
+    BatchNorm(10),
+    softmax)

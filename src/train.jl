@@ -226,7 +226,7 @@ function retrain(algorithm::DynaWorldModel, l::Learner)
         end
 
 
-        if j % 25 == 0
+        if j % 5 == 0
             println("Retrain Iteration $j || Model loss $(round(p.model_loss[end], digits=4)) || Reward loss $(round(p.reward_loss[end], digits=4))")
         end
 
@@ -289,29 +289,31 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
             remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
             p.env_steps += 1
 
+            if p.env_steps % 5 == 0
 
-            S, A, R, S′ = sampleBuffer(l.serial)
+                S, A, R, S′ = sampleBuffer(l.serial)
 
-            A′ = μϕ′(S′)
-            V′ = Qθ′(vcat(S′, A′))
-            Y = R + p.γ * V′
+                A′ = μϕ′(S′)
+                V′ = Qθ′(vcat(S′, A′))
+                Y = R + p.γ * V′
 
-            # critic
-            dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
-            update!(Optimise.Adam(p.η_critic), Flux.params(Qθ), dθ)
-            # actor
-            dϕ = gradient(() -> -loss(Actor(), S), Flux.params(μϕ))
-            update!(Optimise.Adam(p.η_actor), Flux.params(μϕ), dϕ)
+                # critic
+                dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
+                update!(Optimise.Adam(p.η_critic), Flux.params(Qθ), dθ)
+                # actor
+                dϕ = gradient(() -> -loss(Actor(), S), Flux.params(μϕ))
+                update!(Optimise.Adam(p.η_actor), Flux.params(μϕ), dϕ)
 
 
-            for (base, target) in zip(Flux.params(Qθ), Flux.params(Qθ′))
-                target .= p.τ_critic * base .+ (1 - p.τ_critic) * target
+                for (base, target) in zip(Flux.params(Qθ), Flux.params(Qθ′))
+                    target .= p.τ_critic * base .+ (1 - p.τ_critic) * target
+                end
+
+                for (base, target) in zip(Flux.params(μϕ), Flux.params(μϕ′))
+                    target .= p.τ_actor * base .+ (1 - p.τ_actor) * target
+                end
             end
-
-            for (base, target) in zip(Flux.params(μϕ), Flux.params(μϕ′))
-                target .= p.τ_actor * base .+ (1 - p.τ_actor) * target
-            end
-
+            
         end
 
         
@@ -327,15 +329,15 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
         
         append!(p.total_rewards, ep.total_reward)
         
-        if l.model_retrain
-            retrain(DynaWorldModel(), l)
+        if e % 10 == 0 
+            if l.model_retrain
+                retrain(DynaWorldModel(), l)
+            end
         end
-        
+
     end
 
 
 
 end
-
-
 
