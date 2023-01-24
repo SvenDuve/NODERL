@@ -57,11 +57,11 @@ function storePlots(t::T, file, p) where T <: NODEArchitecture
     modl = plot(collect(1:length(p.model_loss)), 
                     Array{Float64}(p.model_loss),
                     title="Model Loss", color=:red)
-    Plots.savefig(modl, "output/" * file * ".png")
+    Plots.savefig(modl, "output/" * file * "_model" * ".png")
     rew = plot(collect(1:length(p.reward_loss)), 
                     Array{Float64}(p.reward_loss),
                     title="Reward Loss", color=:green)
-    Plots.savefig(rew, "output/" * file * ".png")
+    Plots.savefig(rew, "output/" * file * "_reward" * ".png")
     #display(diag)
 
 end
