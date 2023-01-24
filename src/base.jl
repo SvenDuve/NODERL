@@ -167,7 +167,7 @@ end
 
 
 function action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
-    s = reshape(s, (8, 1))
+    s = reshape(s, (p.state_size, 1))
     return vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
 end
 

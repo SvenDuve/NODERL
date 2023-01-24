@@ -269,18 +269,17 @@ showResults(DDPG(), p)
 
 
 p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()), 
-                # Parameter(environment="Pendulum-v1",
                 Parameter(environment="LunarLander-v2",
                 batch_size_episodic=1, #64
                 batch_length=40,
                 noise_type="none",
                 max_episodes_length=999,
-                Sequences=600, #200
+                Sequences=100, #200
                 dT = 0.01,
-                η_node = 0.00045,
+                η_node = 0.0045,
                 η_reward = 0.001, #0.0002
-                reward_hidden=[(256, 256), (256, 256)],
-                dynode_hidden=[(20, 20), (20, 20)]));        
+                reward_hidden=[(128, 128)],
+                dynode_hidden=[(128, 128)]));        
 
 
 using Plots
@@ -346,19 +345,19 @@ agentTraineModel
 
 
 
-p, fθ, Rϕ = agentTrainedModel(Learner(DynaWorldModel(), Episodic(), Clamped()), 
-                # Parameter(environment="Pendulum-v1",
-                Parameter(environment="MountainCarContinuous-v0",
-                batch_size_episodic=1, #64
-                batch_length=40,
-                noise_type="none",
-                max_episodes_length=999,
-                Sequences=400, #200
-                dT = 0.01,
-                η_node = 0.00045,
-                η_reward = 0.001, #0.0002
-                reward_hidden=[(64, 64)],
-                dynode_hidden=[(32, 32)]), μϕ);        
+# p, fθ, Rϕ = agentTrainedModel(Learner(DynaWorldModel(), Episodic(), Clamped()), 
+#                 # Parameter(environment="Pendulum-v1",
+#                 Parameter(environment="MountainCarContinuous-v0",
+#                 batch_size_episodic=1, #64
+#                 batch_length=40,
+#                 noise_type="none",
+#                 max_episodes_length=999,
+#                 Sequences=400, #200
+#                 dT = 0.01,
+#                 η_node = 0.00045,
+#                 η_reward = 0.001, #0.0002
+#                 reward_hidden=[(64, 64)],
+#                 dynode_hidden=[(32, 32)]), μϕ);        
 
 
 

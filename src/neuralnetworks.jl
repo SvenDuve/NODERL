@@ -24,9 +24,10 @@ function setNetwork(nn::Reward)
 
     return Chain(Dense(p.state_size + p.action_size, p.reward_hidden[1][1], relu),
                 Chain([Dense(el[1], el[2], relu) for el in p.reward_hidden]...),
+                # BatchNorm(p.reward_hidden[1][1], relu),
+                # Chain([Chain(Dense(el[1], el[2]), BatchNorm(el[2], relu)) for el in p.reward_hidden]...),
                 # Dense(p.reward_hidden[end][2], 1, tanh))
                 Dense(p.reward_hidden[end][2], 1))
-
 
 end
 
