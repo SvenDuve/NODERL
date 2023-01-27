@@ -218,7 +218,9 @@ q, μϕ = trainLearner(Learner(DDPG(),
                 η_actor = 0.001,
                 η_critic = 0.001,
                 τ_actor=0.1,
-                τ_critic=0.025));
+                τ_critic=0.025,
+                critic_hidden = [(32, 32)],
+                actor_hidden = [(64, 64)]));
 
 
 showResults(DDPG(), q)
@@ -228,16 +230,18 @@ p, μϕ = trainLearner(Learner(DDPG(),
                 Online(),
                 Clamped()),
                 Parameter(environment="Pendulum-v1",
-                train_start = 10000,
+                train_start = 1000,
                 max_episodes = 200,
                 # critic_hidden = [(64, 128), (128, 64)],
                 # actor_hidden = [(64, 128), (128, 64)],
                 noise_type = "none",
                 batch_size=128,
-                η_actor = 0.001,
-                η_critic = 0.001,
+                η_actor = 0.0001,
+                η_critic = 0.0001,
                 τ_actor=0.1,
-                τ_critic=0.025));
+                τ_critic=0.025,
+                critic_hidden = [(32, 32)],
+                actor_hidden = [(64, 64)]));
 
 
 showResults(DDPG(), p)
@@ -249,17 +253,21 @@ p, μϕ = trainLearner(Learner(DDPG(),
                 # Parameter(environment="MountainCarContinuous-v0",
                 Parameter(environment="LunarLander-v2",
                 train_start = 1000,
-                max_episodes = 20,
-                # critic_hidden = [(64, 128), (128, 64)],
-                # actor_hidden = [(64, 128), (128, 64)],
-                noise_type = "gaussian",
+                max_episodes = 600,
+                noise_type = "none",
                 batch_size=128,
-                η_actor = 0.0001,
-                η_critic = 0.0002,
-                τ_actor=0.01,
-                τ_critic=0.2,
-                critic_hidden = [(200, 200)],
-                actor_hidden = [(200, 200)]))
+                η_actor = 0.00001,
+                η_critic = 0.0001,
+                τ_actor=0.0125,
+                τ_critic=0.00625,
+                # η_actor = 0.0001,
+                # η_critic = 0.0001,
+                # τ_actor=0.1,
+                # τ_critic=0.025,
+                critic_hidden = [(32, 32)],
+                actor_hidden = [(64, 64)]));
+                # critic_hidden = [(32, 32)],
+                # actor_hidden = [(64, 64)]))
 
 # 48283
 showResults(DDPG(), p)
