@@ -10,7 +10,7 @@ end
 
 function setNetwork(nn::Actor)
     return Chain(Dense(p.state_size, p.actor_hidden[1][1], relu), 
-                Chain([Chain(Dense(el[1], el[2], relu) for el in p.actor_hidden]...),
+                Chain([Dense(el[1], el[2], relu) for el in p.actor_hidden]...),
                 Dense(p.actor_hidden[end][2], p.action_size, tanh),
                 x -> x * p.action_bound)
 
