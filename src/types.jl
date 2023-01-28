@@ -68,6 +68,7 @@ mutable struct GaussianNoise <: NoiseGenerator
     σ
 end
 
+mutable struct NoiseFree <: NoiseGenerator end
 
 
 # Concrete  
