@@ -277,7 +277,9 @@ showResults(DDPG(), p)
 
 
 p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()), 
-                Parameter(environment="LunarLander-v2",
+                # Parameter(environment="LunarLander-v2",
+                Parameter(environment="MountainCarContinuous-v0",
+                # Parameter(environment="LunarLander-v2",
                 batch_size_episodic=1, #64
                 batch_length=40,
                 noise_type="none",
