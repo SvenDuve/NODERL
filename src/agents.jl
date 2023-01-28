@@ -20,67 +20,41 @@ end #trainAgent
 
 
 
-function agentTrainedModel(l::Learner, pms::Parameter, policy)
-
-    println("Welcome to this function.")
-    gym = pyimport("gym")
-    global env = gym.make(pms.environment)
-    global p = resetParameters(pms)
-    global μϕ = policy
-    
-    setNoise(p)
-
-    global 𝒟 = []
-
-    setFunctionApproximation(l.algorithm)
-
-    train(l.algorithm, l)
-
-    return getVals(l.algorithm)
-
-
-end
-
 
 function modelTrainedAgent(l::Learner, pms::Parameter, model, reward) 
-
+    
     println("Welcome to this function.")
     gym = pyimport("gym")
     global env = gym.make(pms.environment)
     global p = resetParameters(pms)
-
+    
     fθ, Rϕ = model, reward 
-
+    
     setNoise(p)
-
+    
     #global 𝒟 = [] # Question, should we separate model and real experience
-
+    
     setFunctionApproximation(l.algorithm)
-
+    
     trainOnModel(l.algorithm, l)
-
+    
     return getVals(l.algorithm)
-
+    
 end
-
-
-
-
-
 
 
 
 function MBDDPGAgent(model::Learner, agent::Learner, pms::Parameter) 
-
+    
     gym = pyimport("gym")
     global world = gym.make(pms.environment)
-
+    
     p, fθ, Rϕ = trainLearner(model, pms)
-
+    
     p, μϕ = modelTrainedAgent(agent, pms, fθ, Rϕ)
-
+    
     return p, μϕ
-
+    
 end
 
 
@@ -108,7 +82,7 @@ end
 #         r::Float64 = 0.0
 #         a::Vector{Float32} = [0.0] # check action space
 #         t::Bool = false
-        
+
 #         for i in 1:p.max_episodes_length_mb
 
 #             a = action(MPC(), model.train, s, p)
@@ -118,7 +92,7 @@ end
 #             # @show s′, r, t
 #             append!(episodeRewards, r)
 #             remember(MPCBuffer(), p.mem_size, s, a, r, s′, t)
-            
+
 #             s = s′
 
 #             if t
@@ -159,7 +133,7 @@ end
 #             append!(episodeRewards, r)
 #             remember(MPCBuffer(), p.mem_size, s, a, r, s′, t)
 #             trainDDPG(modelDDPG())
-            
+
 #             s = s′
 
 #             if t
@@ -179,3 +153,25 @@ end
 
 # end
 
+
+
+# function agentTrainedModel(l::Learner, pms::Parameter, policy)
+
+#     println("Welcome to this function.")
+#     gym = pyimport("gym")
+#     global env = gym.make(pms.environment)
+#     global p = resetParameters(pms)
+#     global μϕ = policy
+    
+#     setNoise(p)
+
+#     global 𝒟 = []
+
+#     setFunctionApproximation(l.algorithm)
+
+#     train(l.algorithm, l)
+
+#     return getVals(l.algorithm)
+
+
+# end

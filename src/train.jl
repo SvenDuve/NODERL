@@ -121,52 +121,6 @@ end
 
 
 
-# Pure NODE Model learning in online fashion, not usable at the moment
-function train(algorithm::NODEModel, l::Learner)
-
-    # scores = zeros(100)
-    # e = 1
-    # idx = 1
-
-    for j in 1:p.Sequences
-
-        ep = Episode(env, l, p)()
-
-
-        for (s, a, r, s′, t) in ep.episode
-
-            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
-
-        end
-        
-
-        S, A, R, S′ = sampleBuffer(l.serial)
-
-
-#        for i in 1:p.batch_size
-        #x = deepcopy(params(fθ))
-        dθ = gradient(() -> loss(NODE(), S, A, R, S′), params(fθ))
-        update!(Optimise.Adam(p.τ_actor), Flux.params(fθ), dθ)
-        #@show x == params(fθ)
-
-        dϕ = gradient(() -> loss(Reward(), S, A, R, S′), params(Rϕ))
-        update!(Optimise.Adam(p.τ_critic), Flux.params(Rϕ), dϕ)
-
-        append!(p.model_loss, loss(NODE(), S, A, R, S′))
-        append!(p.reward_loss, loss(Reward(), S, A, R, S′))
-        
- #       end
-
-
-        if j % 10 == 0
-            println("Iteration $j || Model loss $(p.model_loss[end]) || Reward loss $(p.reward_loss[end])")
-        end
-
-
-    end
-
-end
-
 
 # Algorithm to learn the model 
 function train(algorithm::DynaWorldModel, l::Learner)
