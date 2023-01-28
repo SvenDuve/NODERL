@@ -9,16 +9,26 @@ function train(algorithm::DDPG, l::Learner)
 
     while e <= p.max_episodes
 
-        ep = Episode(env, l, p)()
+        s::Vector{Float32} = env.reset()
+        r::Float64 = 0.0
+        a::Vector{Float32} = [0.0] # check action space
+        t::Bool = false
 
+        episode_rewards = 0
 
-        for (s, a, r, s′, t) in ep.episode
+        #ep = Episode(env, l, p)()
 
-            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
+        for i in 1:p.max_episodes_length
+
             p.env_steps += 1
             p.frames += 1
 
-            # if length(𝒟) >= p.train_start# && π.train
+            a = action(l.action_type, l.train, s, p)
+            s′, r, t, _ = env.step(a)
+            episode_rewards += r 
+
+            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
+
             if p.frames >= p.train_start# && π.train
 
                 S, A, R, S′ = sampleBuffer(l.serial)
@@ -43,21 +53,35 @@ function train(algorithm::DDPG, l::Learner)
                     target .= p.τ_actor * base .+ (1 - p.τ_actor) * target
                 end
             end
+
+
+
+            s = s′
+
+
+            if t
+                append!(p.episode_length, i)
+                env.close()
+                break 
+            end
+            
+            
+            # if length(𝒟) >= p.train_start# && π.train
+
             
         end
         
-
-        scores[idx] = ep.total_reward
+        append!(p.total_rewards, episode_rewards)
+        
+        scores[idx] = episode_rewards
         idx = idx % 100 + 1
         avg = mean(scores)
-        if (e-1) % 50 == 0
+        if e % 10 == 0
             #showReward(algorithm, e, avg, p) # Function to replace below output
-            println("Episode: $e | Score: $(round(ep.total_reward, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
+            println("Episode: $e | Score: $(round(episode_rewards, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
             #println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
         end
         e += 1
-
-        append!(p.total_rewards, ep.total_reward)
 
     end
 
