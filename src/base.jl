@@ -75,13 +75,16 @@ function 𝒩(gn::GaussianNoise)
     rand(Normal(gn.μ, gn.σ))
 end
 
+function 𝒩(nl::NoiseFree) return false end
+
 
 function setNoise(p::Parameter) 
     if p.noise_type == "gaussian"
         global noise = GaussianNoise(0.0f0, 0.1f0)
-    else
+    elseif p.noise_type == "ou"
         global noise = OrnsteinUhlenbeck(0.0f0, 0.15f0, 0.5f0, [0.0f0])
-    end
+    else
+        global noise = NoiseFree()
 end
 
 # function setNoise() end
