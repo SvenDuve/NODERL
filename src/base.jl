@@ -70,8 +70,11 @@ end
 
 function 𝒩(ou::OrnsteinUhlenbeck)
     dx = ou.θ .* (ou.μ .- ou.X)
+    #@show dx
     dx = dx .+ ou.σ .* randn(Float32, length(ou.X))
+    #@show dx
     ou.X = ou.X .+ dx
+    return ou.X
 end
 
 
@@ -87,7 +90,7 @@ function setNoise(p::Parameter)
     if p.noise_type == "gaussian"
         global noise = GaussianNoise(p.gaussian_μ, p.gaussian_σ)
     elseif p.noise_type == "ou"
-        global noise = OrnsteinUhlenbeck(p.ou_μ, p.ou_θ, p.ou_σ, [0.0f0])
+        global noise = OrnsteinUhlenbeck(p.ou_μ, p.ou_θ, p.ou_σ, zeros(p.action_size))
     else
         global noise = NoiseFree()
     end
@@ -177,7 +180,12 @@ end
 
 function action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
     s = reshape(s, (p.state_size, 1))
-    return vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
+    #@show noise.X
+    #@show vcat([𝒩(noise) for i in 1:p.action_size]...)
+#    @show vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
+
+    # return vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
+    return vcat(clamp.(μϕ(s) .+ vcat(𝒩(noise)...) * m, -p.action_bound, p.action_bound)...)
 end
 
 function action(t::ActionSelection, m::Bool, s::Vector{Float32}, p::Parameter)
@@ -185,7 +193,7 @@ function action(t::ActionSelection, m::Bool, s::Vector{Float32}, p::Parameter)
 end
 
 function action(t::Randomized, m::Bool, s::Vector{Float32}, p::Parameter)
-    return env.action_space.sample() .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m
+    return env.action_space.sample() .+ vcat(𝒩(noise)...) * m
 end
 
 function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 

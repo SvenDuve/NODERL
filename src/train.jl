@@ -25,7 +25,9 @@ function train(algorithm::DDPG, l::Learner)
 
             a = action(l.action_type, l.train, s, p)
             s′, r, t, _ = env.step(a)
-            episode_rewards += r 
+            episode_rewards += r
+            #noise.X = a
+            #@show noise.X
 
             remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
 
