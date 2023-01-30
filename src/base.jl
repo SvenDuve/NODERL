@@ -30,6 +30,11 @@
     dynode_hidden::Array = [(200, 200)]
     γ::Float64 = 0.99
     noise_type::String = "gaussian"
+    gaussian_μ::Float64 = 0.0
+    gaussian_σ::Float64 = 0.1
+    ou_μ::Float64=0.0
+    ou_θ::Float64=0.15
+    ou_σ::Float64=0.2
     τ_actor::Float64 = 0.1
     τ_critic::Float64 = 0.5
     η_actor::Float64 = 0.0001 #lr
@@ -80,11 +85,12 @@ function 𝒩(nl::NoiseFree) return false end
 
 function setNoise(p::Parameter) 
     if p.noise_type == "gaussian"
-        global noise = GaussianNoise(0.0f0, 0.1f0)
+        global noise = GaussianNoise(p.gaussian_μ, p.gaussian_σ)
     elseif p.noise_type == "ou"
-        global noise = OrnsteinUhlenbeck(0.0f0, 0.15f0, 0.5f0, [0.0f0])
+        global noise = OrnsteinUhlenbeck(p.ou_μ, p.ou_θ, p.ou_σ, [0.0f0])
     else
         global noise = NoiseFree()
+    end
 end
 
 # function setNoise() end
