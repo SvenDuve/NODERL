@@ -39,7 +39,11 @@ pms = Parameter(environment="LunarLander-v2",
                 batch_size=128,
                 batch_length=40,
                 noise_type="gaussian",
+<<<<<<< HEAD
                 train_start = 1000,
+=======
+                train_start = 0,
+>>>>>>> main
                 max_episodes = 200,
                 max_episodes_length=400,
                 Sequences=400, #200
