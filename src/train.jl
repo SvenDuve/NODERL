@@ -263,13 +263,17 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
             
         end
 
+
+        ####### Cut here
+        
+
         ep = Episode(env, l, p)()
 
         for (s, a, r, s′, t) in ep.episode
             remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
             p.env_steps += 1
 
-            if p.env_steps % 5 == 0
+            if p.env_steps % p.train_fr == 0
 
                 S, A, R, S′ = sampleBuffer(l.serial)
 

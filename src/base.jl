@@ -24,6 +24,7 @@
     model_episode_length::Int = 400 # Number of steps to simulate 
     model_episode_retrain::Int = 50 # Number of episodes to retrain the model
     trainloops_mb::Int = 10
+    train_fr::Int = 5
     critic_hidden::Array = [(200, 200)]
     actor_hidden::Array = [(200, 200)]
     reward_hidden::Array = [(200, 200)]

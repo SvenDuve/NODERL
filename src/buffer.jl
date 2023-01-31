@@ -7,6 +7,13 @@ function remember(m::GeneralBuffer, mem_size, s::Vector{Float32}, a::Vector{Floa
     push!(𝒟, [s, a, r, s′, t])
 end #remember
 
+function remember(m::WorldBuffer, mem_size, s::Vector{Float32}, a::Vector{Float32}, r::Float64, s′::Vector{Float32}, t::Bool)
+    if length(𝒟_World) >= mem_size
+        deleteat!(𝒟_World, 1)
+    end
+    push!(𝒟_World, [s, a, r, s′, t])
+end #remember
+
 
 function remember(m::MPCBuffer, mem_size, s::Vector{Float32}, a::Vector{Float32}, r::Float64, s′::Vector{Float32}, t::Bool)
     if length(𝒟_RL) >= mem_size
