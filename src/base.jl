@@ -198,35 +198,35 @@ function action(t::Randomized, m::Bool, s::Vector{Float32}, p::Parameter)
     return env.action_space.sample() .+ vcat(𝒩(noise)...) * m
 end
 
-function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 
+# function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 
 
-    Sequences = []
+#     Sequences = []
 
-    for k in 1:2  
-        append!(Sequences, [[[rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)] for j in 1:2]])
-    end
+#     for k in 1:2  
+#         append!(Sequences, [[[rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)] for j in 1:2]])
+#     end
 
-    R = []
-    S = []
-    r = []
-    s_ = []
+#     R = []
+#     S = []
+#     r = []
+#     s_ = []
 
-    for Sequence in Sequences
-        for a in Sequence
-            append!(r, Rϕ(vcat(s, a)) |> first)
-            s = fθ(vcat(s, a))
-            #s = fθ(vcat(s, a))
-            append!(s_, s)
-        end
-        append!(R, sum(r))
-        append!(S, [s_])
-        r = []
-        s_ = []
-    end
+#     for Sequence in Sequences
+#         for a in Sequence
+#             append!(r, Rϕ(vcat(s, a)) |> first)
+#             s = fθ(vcat(s, a))
+#             #s = fθ(vcat(s, a))
+#             append!(s_, s)
+#         end
+#         append!(R, sum(r))
+#         append!(S, [s_])
+#         r = []
+#         s_ = []
+#     end
 
-    return Sequences[argmax(R)][1]
+#     return Sequences[argmax(R)][1]
 
-end
+# end
 
 
 
