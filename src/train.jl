@@ -189,7 +189,7 @@ function retrain(algorithm::DynaWorldModel, l::Learner)
 
     for j in 1:p.model_episode_retrain
         
-        S, A, R, S′ = sampleBuffer(Episodic())
+        S, A, R, S′ = sampleBuffer(WorldBuffer())
 
 
         for i in 1:p.batch_size_episodic
@@ -265,17 +265,34 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
 
 
         ####### Cut here
-        
 
-        ep = Episode(env, l, p)()
 
-        for (s, a, r, s′, t) in ep.episode
-            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
+        s::Vector{Float32} = env.reset()
+        r::Float64 = 0.0
+        a::Vector{Float32} = [0.0] # check action space
+        t::Bool = false
+
+        episode_rewards = 0
+
+        #ep = Episode(env, l, p)()
+
+        for i in 1:p.max_episodes_length
+
             p.env_steps += 1
+            p.frames += 1
 
-            if p.env_steps % p.train_fr == 0
+            a = action(l.action_type, l.train, s, p)
+            s′, r, t, _ = env.step(a)
+            episode_rewards += r
+            #noise.X = a
+            #@show noise.X
 
-                S, A, R, S′ = sampleBuffer(l.serial)
+            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
+            remember(WorldBuffer(), p.mem_size, s, a, r, s′, t) # Only Buffered to retrain Model currently
+
+            if p.frames >= p.train_start# && π.train
+
+                S, A, R, S′ = sampleBuffer(l.serial) # Samples from the general buffer, ie. model and real
 
                 A′ = μϕ′(S′)
                 V′ = Qθ′(vcat(S′, A′))
@@ -297,21 +314,39 @@ function trainOnModel(algorithm::DDPG, l::Learner) #
                     target .= p.τ_actor * base .+ (1 - p.τ_actor) * target
                 end
             end
+
+
+
+            s = s′
+
+
+            if t
+                append!(p.episode_length, i)
+                append!(p.world_episode_length, i)
+                env.close()
+                break 
+            end
+            
+            
+            # if length(𝒟) >= p.train_start# && π.train
+
             
         end
-
         
+        append!(p.total_rewards, episode_rewards)
         
-        scores[idx] = ep.total_reward
+        scores[idx] = episode_rewards
         idx = idx % 100 + 1
         avg = mean(scores)
-        if (e-1) % 25 == 0
-            #showReward(algorithm, e, avg, p) # Function to replace below output
-            println("Episode: $e | Score: $(round(ep.total_reward, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
-        end
-        e += 1
         
-        append!(p.total_rewards, ep.total_reward)
+        if e % 10 == 0
+            #showReward(algorithm, e, avg, p) # Function to replace below output
+            println("Episode: $e | Score: $(round(episode_rewards, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
+            #println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
+        end
+
+        e += 1
+
         
         if e % 10 == 0 
             if l.model_retrain

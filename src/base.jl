@@ -20,6 +20,7 @@
     max_episodes_length::Int = 1000
     max_episodes_length_mb::Int = 1000
     episode_length::Array = []
+    world_episode_length::Array = []
     Sequences::Int = 10 # # number of episodes to run for DynaWorldModel
     model_episode_length::Int = 400 # Number of steps to simulate 
     model_episode_retrain::Int = 50 # Number of episodes to retrain the model
