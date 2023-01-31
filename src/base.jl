@@ -8,39 +8,41 @@
     action_bound::Float64 = 1.0
     action_bound_high::Array = [1.0]
     action_bound_low::Array = [-1.0]
-    batch_size::Int = 128
-    batch_size_episodic::Int = 1
-    DDPG_batch::Int = 128
-    batch_length::Int = 40
-    mem_size::Int = 1000000
+    batch_size::Int = 128 # general batch size
+    batch_size_episodic::Int = 1 # Batch sixe for the episodic model
+    DDPG_batch::Int = 128 # Batch size for the DDPG Agent
+    batch_length::Int = 40 # episode length per sample for the model
+    mem_size::Int = 1000000 # Buffer size
+    env_steps::Int = 0 
     frames::Int = 0
-    env_steps::Int = 0
-    train_start::Int = 1000 
+    train_start::Int = 1000 # Exploration steps without learning
     max_episodes::Int = 2000
     max_episodes_length::Int = 1000
     max_episodes_length_mb::Int = 1000
-    episode_length::Array = []
+    episode_length::Array = [] # Captures episode length for every interaction
+    world_episode_length::Array = [] #Captures the episode length while agent training in world
     Sequences::Int = 10 # # number of episodes to run for DynaWorldModel
     model_episode_length::Int = 400 # Number of steps to simulate 
     model_episode_retrain::Int = 50 # Number of episodes to retrain the model
     trainloops_mb::Int = 10
+    train_fr::Int = 5 # how often to train DDPG, in MB
     critic_hidden::Array = [(200, 200)]
     actor_hidden::Array = [(200, 200)]
     reward_hidden::Array = [(200, 200)]
     dynode_hidden::Array = [(200, 200)]
     γ::Float64 = 0.99
-    noise_type::String = "gaussian"
+    noise_type::String = "gaussian" # action noise type, either "gaussian" or "ou"
     gaussian_μ::Float64 = 0.0
     gaussian_σ::Float64 = 0.1
     ou_μ::Float64=0.0
     ou_θ::Float64=0.15
     ou_σ::Float64=0.2
-    τ_actor::Float64 = 0.1
+    τ_actor::Float64 = 0.1 # base/ target weigthing
     τ_critic::Float64 = 0.5
-    η_actor::Float64 = 0.0001 #lr
-    η_critic::Float64 = 0.01 #lr
-    η_node::Float64 = 0.001 #lr
-    η_reward::Float64 = 0.001 #lr
+    η_actor::Float64 = 0.0001 #lr for the actor
+    η_critic::Float64 = 0.01 #lr for the critic
+    η_node::Float64 = 0.001 #lr for the NODE
+    η_reward::Float64 = 0.001 #lr for the reward
     H::Int = 200
     m::Int = 1000
     dT::Float32 = 0.01
@@ -196,35 +198,35 @@ function action(t::Randomized, m::Bool, s::Vector{Float32}, p::Parameter)
     return env.action_space.sample() .+ vcat(𝒩(noise)...) * m
 end
 
-function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 
+# function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 
 
-    Sequences = []
+#     Sequences = []
 
-    for k in 1:2  
-        append!(Sequences, [[[rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)] for j in 1:2]])
-    end
+#     for k in 1:2  
+#         append!(Sequences, [[[rand(Uniform(el[1], el[2])) for el in zip(p.action_bound_low, p.action_bound_high)] for j in 1:2]])
+#     end
 
-    R = []
-    S = []
-    r = []
-    s_ = []
+#     R = []
+#     S = []
+#     r = []
+#     s_ = []
 
-    for Sequence in Sequences
-        for a in Sequence
-            append!(r, Rϕ(vcat(s, a)) |> first)
-            s = fθ(vcat(s, a))
-            #s = fθ(vcat(s, a))
-            append!(s_, s)
-        end
-        append!(R, sum(r))
-        append!(S, [s_])
-        r = []
-        s_ = []
-    end
+#     for Sequence in Sequences
+#         for a in Sequence
+#             append!(r, Rϕ(vcat(s, a)) |> first)
+#             s = fθ(vcat(s, a))
+#             #s = fθ(vcat(s, a))
+#             append!(s_, s)
+#         end
+#         append!(R, sum(r))
+#         append!(S, [s_])
+#         r = []
+#         s_ = []
+#     end
 
-    return Sequences[argmax(R)][1]
+#     return Sequences[argmax(R)][1]
 
-end
+# end
 
 
 

@@ -46,6 +46,7 @@ struct DyReward <: NetworkArchitecture end
 abstract type GeneralBuffer <: RL end
 struct RandBuffer <: GeneralBuffer end
 struct MPCBuffer <: GeneralBuffer end
+struct WorldBuffer <: GeneralBuffer end
 
 #struct RandBuffer <: GeneralBuffer end
 
