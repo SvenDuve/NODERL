@@ -76,7 +76,7 @@ end
 
 function showAgent(file, pms::Parameter) 
 
-    μϕ = loadModel(file, pms)
+    global μϕ = loadModel(file, pms)
 
     gym = pyimport("gym")
     global env = gym.make(pms.environment)

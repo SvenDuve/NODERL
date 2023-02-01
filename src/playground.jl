@@ -215,13 +215,13 @@ q, μϕ = trainLearner(Learner(DDPG(),
                 train_start = 1000,
                 max_episodes = 200,
                 noise_type = "ou",
-                ou_θ=0.15,
-                ou_σ=0.2,
+                ou_θ=0.2,
+                ou_σ=0.3,
                 batch_size=128,
-                η_actor = 0.002,
-                η_critic = 0.0002,
-                τ_actor=0.05,
-                τ_critic=0.10,
+                η_actor = 0.02,
+                η_critic = 0.002,
+                τ_actor=0.01,
+                τ_critic=0.01,
                 critic_hidden = [(32, 32)],
                 actor_hidden = [(64, 64)]));
 
@@ -285,7 +285,7 @@ p, fθ, Rϕ = trainLearner(Learner(DynaWorldModel(), Episodic(), Randomized()),
                 # Parameter(environment="LunarLander-v2",
                 batch_size_episodic=1, #64
                 batch_length=40,
-                noise_type="none",
+                noise_type="ou",
                 max_episodes_length=999,
                 Sequences=100, #200
                 dT = 0.01,
@@ -524,4 +524,12 @@ env.close()
 
 pms = Parameter(environment="LunarLander-v2")
 
-showAgent("lr_actor5.0e-5lr_critic5.0e-5theta0.31111sigma0.28889.bson", pms)
+using NNlib
+using Flux
+showAgent("output/LL_promise_2.bson", pms)    
+
+
+
+pms = Parameter()
+
+showAgent("output/MC_τ_actor0.2τ_critic0.13337η_actor0.00022η_critic0.001.bson", pms)    
