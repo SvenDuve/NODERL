@@ -16,6 +16,8 @@ using Statistics
 using Plots
 using UnicodePlots
 using BSON: @save
+using BSON: @load
+
 
 
 include("types.jl")
@@ -78,7 +80,9 @@ export RL,
         modelTrainedAgent,
         trainOnModel,
         storeModel,
-        storePlots
+        loadModel,
+        storePlots,
+        showAgent
 
 
 greet() = print("Hello World!")

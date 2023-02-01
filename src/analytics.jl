@@ -74,12 +74,13 @@ function showReward(m::Agent, e, avg, p)
 end
 
 
-function showAgent(policy, p::Parameter) 
+function showAgent(file, pms::Parameter) 
 
+    μϕ = loadModel(file, pms)
 
     gym = pyimport("gym")
-    env = gym.make(p.environment)
-    p = resetParameters(p)
+    global env = gym.make(pms.environment)
+    global p = resetParameters(pms)
 
 
     s = env.reset()
@@ -88,7 +89,7 @@ function showAgent(policy, p::Parameter)
 
     while notSolved
 
-        a = NODERL.action(Clamped(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
+        a = action(Clamped(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
 
         s′, r, t, _ = env.step(a)
         append!(R, r)
@@ -105,6 +106,12 @@ end
 
 function storeModel(policy, file, p) 
     @save file policy
+end
+
+
+function loadModel(file, p) 
+    @load file policy
+    return policy
 end
 
 

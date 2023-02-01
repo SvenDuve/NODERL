@@ -468,3 +468,60 @@ m = Chain(
     Dense(64, 10),
     BatchNorm(10),
     softmax)
+
+
+
+
+using Flux # Flux must be loaded before calling @load
+
+using BSON: @load
+using BSON
+
+@load "lr_actor5.0e-5lr_critic5.0e-5theta0.31111sigma0.28889.bson" policy
+
+
+BSON.parse( "lr_actor5.0e-5lr_critic5.0e-5theta0.31111sigma0.28889.bson" )
+
+global μϕ = policy
+
+using Conda
+using PyCall
+
+p = Parameter(environment="LunarLander-v2")
+
+gym = pyimport("gym")
+global env = gym.make(p.environment)
+p = resetParameters(p)
+
+p = Parameter(p; state_size=env.observation_space.shape[1],
+        state_high = env.observation_space.high,
+        state_low = env.observation_space.low,
+        action_size=env.action_space.shape[1],
+        action_bound=env.action_space.high[1],
+        action_bound_high=env.action_space.high,
+        action_bound_low=env.action_space.low)
+
+
+s = env.reset()
+R = []
+notSolved = true
+
+while notSolved
+
+    a = NODERL.action(Clamped(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
+    # a = NODERL.action(Randomized(), false, s, p) #action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
+
+    s′, r, t, _ = env.step(a)
+    append!(R, r)
+    env.render()
+    sleep(0.1)
+    s = s′
+    notSolved = !t
+end
+
+env.close()
+
+
+pms = Parameter(environment="LunarLander-v2")
+
+showAgent("lr_actor5.0e-5lr_critic5.0e-5theta0.31111sigma0.28889.bson", pms)
