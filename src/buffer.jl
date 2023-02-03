@@ -32,7 +32,8 @@ function sampleBuffer(m::Process)
     A = hcat(X[2, :]...)
     R = hcat(X[3, :]...)
     S′ = hcat(X[4, :]...)
-    return (S, A, R, S′)
+    T = hcat(X[5,:]...)
+    return (S, A, R, S′, T)
 end #sampleBuffer
 
 

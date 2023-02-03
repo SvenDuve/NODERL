@@ -217,11 +217,12 @@ q, μϕ = trainLearner(Learner(DDPG(),
                 noise_type = "ou",
                 ou_θ=0.2,
                 ou_σ=0.3,
+                decay=0.95,
                 batch_size=128,
-                η_actor = 0.02,
-                η_critic = 0.002,
-                τ_actor=0.01,
-                τ_critic=0.01,
+                η_actor = 0.01,
+                η_critic = 0.01,
+                τ_actor=0.005,
+                τ_critic=0.005,
                 critic_hidden = [(32, 32)],
                 actor_hidden = [(64, 64)]));
 
@@ -237,9 +238,9 @@ p, μϕ = trainLearner(Learner(DDPG(),
                 max_episodes = 200,
                 # critic_hidden = [(64, 128), (128, 64)],
                 # actor_hidden = [(64, 128), (128, 64)],
-                noise_type = "ou",
-                ou_θ=0.0,
-                ou_σ=0.5,
+                noise_type = "gaussian",
+                gaussian_σ = 0.1,
+                #decay=0.95,
                 batch_size=128,
                 η_actor = 0.001,
                 η_critic = 0.001,
@@ -252,16 +253,18 @@ p, μϕ = trainLearner(Learner(DDPG(),
 showResults(DDPG(), p)
 
 
+
+
 p, μϕ = trainLearner(Learner(DDPG(),
                 Online(),
                 Clamped()),
                 # Parameter(environment="MountainCarContinuous-v0",
                 Parameter(environment="LunarLander-v2",
                 train_start = 1000,
-                max_episodes = 600,
-                noise_type = "ou",
-                ou_θ=0.3,
-                ou_σ=0.4,
+                max_episodes = 11,
+                noise_type = "gaussian",
+                gaussian_σ=0.4,
+                decay=0.7,
                 batch_size=128,
                 η_actor = 0.0001,
                 η_critic = 0.0001,
@@ -322,7 +325,7 @@ showLoss(p)
 using Conda
 using PyCall
 
-p = Parameter()
+p = Parameter(environment="MountainCarContinuous-v0")
 
 gym = pyimport("gym")
 global env = gym.make(p.environment)
