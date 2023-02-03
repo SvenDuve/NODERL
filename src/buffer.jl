@@ -108,8 +108,6 @@ function sampleBuffer(m::WorldBuffer)
     indStart = sample(transInds, p.batch_size_episodic) # to set up dynode_batch_size -> 64 in the paper
     slices = [collect(i:i+p.batch_length-1) for i in indStart]
 
-    @show slices
-
     # the parameter to loop is S[:,:,i], this returns a matrix of an episode
     batch = 𝒟_World[vcat(slices...)]
     X = hcat(batch...)
