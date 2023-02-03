@@ -37,6 +37,7 @@
     ou_μ::Float64=0.0
     ou_θ::Float64=0.15
     ou_σ::Float64=0.2
+    decay::Float64=0.1
     τ_actor::Float64 = 0.1 # base/ target weigthing
     τ_critic::Float64 = 0.5
     η_actor::Float64 = 0.0001 #lr for the actor
@@ -187,7 +188,7 @@ function action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
 #    @show vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
 
     # return vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
-    return vcat(clamp.(μϕ(s) .+ vcat(𝒩(noise)...) * m, -p.action_bound, p.action_bound)...)
+    return vcat(clamp.(μϕ(s) .+ vcat(𝒩(noise)...) .* noise_decay() * m, -p.action_bound, p.action_bound)...)
 end
 
 function action(t::ActionSelection, m::Bool, s::Vector{Float32}, p::Parameter)
@@ -196,6 +197,11 @@ end
 
 function action(t::Randomized, m::Bool, s::Vector{Float32}, p::Parameter)
     return env.action_space.sample() .+ vcat(𝒩(noise)...) * m
+end
+
+
+function noise_decay()
+    p.decay^(p.env_steps/(p.max_episodes_length * p.max_episodes))
 end
 
 # function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 

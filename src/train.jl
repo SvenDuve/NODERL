@@ -33,11 +33,11 @@ function train(algorithm::DDPG, l::Learner)
 
             if p.frames >= p.train_start# && π.train
 
-                S, A, R, S′ = sampleBuffer(l.serial)
+                S, A, R, S′, T = sampleBuffer(l.serial)
 
                 A′ = μϕ′(S′)
                 V′ = Qθ′(vcat(S′, A′))
-                Y = R + p.γ * V′
+                Y = R + p.γ * ((1 .- T) .* V′)
 
                 # critic
                 dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
@@ -80,7 +80,7 @@ function train(algorithm::DDPG, l::Learner)
         avg = mean(scores)
         if e % 10 == 0
             #showReward(algorithm, e, avg, p) # Function to replace below output
-            println("Episode: $e | Score: $(round(episode_rewards, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames)")
+            println("Episode: $e | Score: $(round(episode_rewards, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames) | Decay: $(noise_decay())")
             #println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
         end
         e += 1

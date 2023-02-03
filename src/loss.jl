@@ -1,7 +1,7 @@
 #function loss(t::Critic, Y::Matrix{Float64}, S::Matrix{Float32}, A::Matrix{Float64})
 function loss(t::Critic, Y, S, A)
     V = Qθ(vcat(S, A))
-    (V .- Y) .^ 2 |> sum
+    (V .- Y) .^ 2 |> sum |> mean
 end
 
 
