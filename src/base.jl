@@ -32,12 +32,12 @@
     dynode_hidden::Array = [(200, 200)]
     γ::Float64 = 0.99
     noise_type::String = "gaussian" # action noise type, either "gaussian" or "ou"
-    gaussian_μ::Float64 = 0.0
-    gaussian_σ::Float64 = 0.1
-    ou_μ::Float64=0.0
-    ou_θ::Float64=0.15
-    ou_σ::Float64=0.2
+    μ::Float64 = 0.0
+    σ::Float64 = 0.1
+    θ::Float64 = 0.15
+    decay_type::Noise = Exponential()
     decay::Float64=0.1
+    target_reward::Float64=200.0
     τ_actor::Float64 = 0.1 # base/ target weigthing
     τ_critic::Float64 = 0.5
     η_actor::Float64 = 0.0001 #lr for the actor
@@ -72,12 +72,13 @@ end
 
 
 function 𝒩(ou::OrnsteinUhlenbeck)
+
     dx = ou.θ .* (ou.μ .- ou.X)
-    #@show dx
     dx = dx .+ ou.σ .* randn(Float32, length(ou.X))
-    #@show dx
     ou.X = ou.X .+ dx
+    
     return ou.X
+
 end
 
 
@@ -91,9 +92,9 @@ function 𝒩(nl::NoiseFree) return false end
 
 function setNoise(p::Parameter) 
     if p.noise_type == "gaussian"
-        global noise = GaussianNoise(p.gaussian_μ, p.gaussian_σ)
+        global noise = GaussianNoise(p.μ, p.σ)
     elseif p.noise_type == "ou"
-        global noise = OrnsteinUhlenbeck(p.ou_μ, p.ou_θ, p.ou_σ, zeros(p.action_size))
+        global noise = OrnsteinUhlenbeck(p.μ, p.θ, p.σ, zeros(p.action_size))
     else
         global noise = NoiseFree()
     end
@@ -182,27 +183,60 @@ end
 
 
 function action(t::Clamped, m::Bool, s::Vector{Float32}, p::Parameter)
-    s = reshape(s, (p.state_size, 1))
-    #@show noise.X
-    #@show vcat([𝒩(noise) for i in 1:p.action_size]...)
-#    @show vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
 
-    # return vcat(clamp.(μϕ(s) .+ vcat([𝒩(noise) for i in 1:p.action_size]...) * m, -p.action_bound, p.action_bound)...)
-    return vcat(clamp.(μϕ(s) .+ vcat(𝒩(noise)...) .* noise_decay() * m, -p.action_bound, p.action_bound)...)
+    s = reshape(s, (p.state_size, 1))
+    noise.σ = noise_decay(p.decay_type)
+
+    return vcat(clamp.(μϕ(s) .+ vcat(𝒩(noise)...) * m, -p.action_bound, p.action_bound)...)
+
 end
 
 function action(t::ActionSelection, m::Bool, s::Vector{Float32}, p::Parameter)
+
     return env.action_space.sample()
+
 end
 
 function action(t::Randomized, m::Bool, s::Vector{Float32}, p::Parameter)
+
     return env.action_space.sample() .+ vcat(𝒩(noise)...) * m
+
 end
 
 
-function noise_decay()
-    p.decay^(p.env_steps/(p.max_episodes_length * p.max_episodes))
+function noise_decay(T::Exponential)
+
+    return p.σ * p.decay^(p.env_steps/(p.max_episodes_length * p.max_episodes))
+
 end
+
+
+function noise_decay(T::Adaptive)
+
+    try
+    
+        n_std = p.σ * ( 1.0 + abs((p.total_rewards[end] - p.target_reward) / (maximum(p.total_rewards) - minimum(p.total_rewards))))
+        n_std = min(0.9, max(0.05, n_std))
+    
+    catch
+    
+        p.σ
+    
+    end
+
+end
+
+
+
+
+
+# function get_noise_stddev(initial_noise_stddev, min_noise_stddev, max_noise_stddev, mean_reward, mean_reward_target, reward_range)
+#     noise_stddev = initial_noise_stddev * (1.0 + (mean_reward - mean_reward_target) / reward_range)
+#     noise_stddev = min(max_noise_stddev, max(min_noise_stddev, noise_stddev))
+#     return noise_stddev
+# end
+
+
 
 # function action(t::MPC, m::Bool, s::Vector{Float32}, p::Parameter) 
 

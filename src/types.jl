@@ -46,6 +46,10 @@ abstract type GeneralBuffer <: RL end
 struct RandBuffer <: GeneralBuffer end
 struct WorldBuffer <: GeneralBuffer end
 
+abstract type Noise <: RL end
+struct Exponential <: Noise end
+struct Adaptive <: Noise end
+
 #struct RandBuffer <: GeneralBuffer end
 
 
