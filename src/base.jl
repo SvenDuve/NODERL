@@ -226,6 +226,8 @@ function noise_decay(T::Adaptive)
 
 end
 
+function noise_decay(T::Static) p.σ end
+
 
 
 
