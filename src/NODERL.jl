@@ -8,7 +8,7 @@ using Distributions
 import StatsBase.sample
 import StatsBase.AnalyticWeights
 import StatsBase.Weights
-import StatsBase.tiedrank
+import StatsBase.ordinalrank
 using Flux, Flux.Optimise
 import Flux.params
 using NNlib, Random, Zygote

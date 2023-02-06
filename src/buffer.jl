@@ -40,7 +40,8 @@ end #sampleBuffer
 
 function sampleBuffer(m::PER)
 
-    P = (1 ./ tiedrank(D)).^p.α ./ sum((1 ./ tiedrank(D)).^p.α)
+    rankD = (1 ./ ordinalrank(D)).^p.α
+    P = rankD ./ sum(rankD)
 
     p.experience = sample(collect(1:length(D)), Weights(P), p.batch_size)
     
