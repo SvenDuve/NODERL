@@ -37,6 +37,34 @@ function sampleBuffer(m::Process)
 end #sampleBuffer
 
 
+
+function sampleBuffer(m::PER)
+
+    P = (1 ./ tiedrank(D)).^p.α ./ sum((1 ./ tiedrank(D)).^p.α)
+
+    p.experience = sample(collect(1:length(D)), Weights(P), p.batch_size)
+    
+    # for el in experience
+    #     s, a, r, s′, t = 𝒟[el]
+    #     TD_error[el] = r + p.γ * first(Qθ′(vcat(s′, μϕ(s)))) - first(Qθ(vcat(s, a)))
+    #     weights[el] = 1 / (p.mem_size * P[el])^p.β
+    #     D[el] = TD_error[el] |> abs
+    # end
+    
+    minibatch = 𝒟[p.experience]
+
+    X = hcat(minibatch...)
+    S = hcat(X[1, :]...)
+    A = hcat(X[2, :]...)
+    R = hcat(X[3, :]...)
+    S′ = hcat(X[4, :]...)
+    T = hcat(X[5,:]...)
+    
+    
+    return (S, A, R, S′, T)
+end #sampleBuffer
+
+
 function sampleBuffer(m::modelDDPG)
     minibatch = sample(𝒟_RL, p.batch_size)
     X = hcat(minibatch...)

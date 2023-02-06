@@ -9,6 +9,10 @@ function trainLearner(l::Learner, pms::Parameter)
     setNoise(p)
 
     global 𝒟 = []
+    global D = []
+    global P = []
+    global TD_error = []
+    global weights = []
 
     setFunctionApproximation(l.algorithm)
 

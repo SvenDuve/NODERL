@@ -31,13 +31,40 @@ function train(algorithm::DDPG, l::Learner)
 
             remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
 
+            if l.serial == PER()
+                setPER()
+            end
+
+            # if p.env_steps > 1
+            #     # println("grösser 1")
+            #     append!(D, maximum(D[1:p.env_steps-1]))
+            #     append!(TD_error, 0.0)
+            #     append!(weights, 0.0)
+            #     # @show maximum(D[1:p.env_steps-1])
+            #     # D[p.env_steps] = maximum(D[1:p.env_steps-1])
+            # else
+            #     # println("I am here $(p.env_steps)")
+            #     append!(D, 1.)
+            #     append!(TD_error, 0.0)
+            #     append!(weights, 0.0)
+            # end
+
+            # @show size(𝒟) == size(D)
+
             if p.frames >= p.train_start# && π.train
 
                 S, A, R, S′, T = sampleBuffer(l.serial)
-
+                
+                
                 A′ = μϕ′(S′)
                 V′ = Qθ′(vcat(S′, A′))
                 Y = R + p.γ * ((1 .- T) .* V′)
+                
+                if l.serial == PER()
+                    TD_error[p.experience] = Y .- Qθ(vcat(S, A))
+                    weights[p.experience] = 1 ./ (p.mem_size .* P[p.experience]).^p.β
+                    D[p.experience] = TD_error[p.experience] .|> abs
+                end
 
                 # critic
                 dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
@@ -72,7 +99,8 @@ function train(algorithm::DDPG, l::Learner)
 
             
         end
-        
+        # @show D[end-10:end]
+        # @show weights[end-10:end]
         append!(p.total_rewards, episode_rewards)
         
         scores[idx] = episode_rewards
@@ -88,6 +116,9 @@ function train(algorithm::DDPG, l::Learner)
     end
 
 end
+
+
+
 
 
 ## Adjusted training Algorithm for the combined Agent

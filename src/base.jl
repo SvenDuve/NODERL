@@ -38,6 +38,9 @@
     decay_type::Noise = Exponential()
     decay::Float64=0.1
     target_reward::Float64=200.0
+    α::Float64 = 0.7
+    β::Float64 = 0.5
+    experience::Array = []
     τ_actor::Float64 = 0.1 # base/ target weigthing
     τ_critic::Float64 = 0.5
     η_actor::Float64 = 0.0001 #lr for the actor
@@ -229,6 +232,24 @@ end
 function noise_decay(T::Static) p.σ end
 
 
+
+function setPER()
+    if p.env_steps > 1
+        # println("grösser 1")
+        append!(D, maximum(D[1:p.env_steps-1]))
+        append!(TD_error, 0.0)
+        append!(weights, 0.0)
+        append!(P, 0.0)
+        # @show maximum(D[1:p.env_steps-1])
+        # D[p.env_steps] = maximum(D[1:p.env_steps-1])
+    else
+        # println("I am here $(p.env_steps)")
+        append!(D, 1.)
+        append!(TD_error, 0.0)
+        append!(weights, 0.0)
+        append!(P, 0.0)
+    end
+end
 
 
 

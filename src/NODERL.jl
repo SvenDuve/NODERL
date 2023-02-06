@@ -7,6 +7,8 @@ using PyCall
 using Distributions
 import StatsBase.sample
 import StatsBase.AnalyticWeights
+import StatsBase.Weights
+import StatsBase.tiedrank
 using Flux, Flux.Optimise
 import Flux.params
 using NNlib, Random, Zygote
@@ -38,6 +40,7 @@ export RL,
         Process,
         Episodic,
         Online,
+        PER,
         ActionSelection,
         Randomized,
         Clamped,

@@ -214,12 +214,13 @@ env.close()
 
 
 q, μϕ = trainLearner(Learner(DDPG(),
-                Online(),
+                PER(),
                 Clamped()),
                 Parameter(environment="MountainCarContinuous-v0",
                 # Parameter(environment="LunarLander-v2",
-                train_start = 1000,
-                max_episodes = 200,
+                train_start = 1000, # back to 1000
+                # max_episodes_length = 999, #delete
+                max_episodes = 2, # back to 200
                 noise_type = "ou",
                 θ=0.2,
                 σ=0.3,
@@ -228,8 +229,8 @@ q, μϕ = trainLearner(Learner(DDPG(),
                 batch_size=128,
                 η_actor = 0.001,
                 η_critic = 0.001,
-                τ_actor=0.005,
-                τ_critic=0.005,
+                τ_actor=0.05,
+                τ_critic=0.05,
                 critic_hidden = [(32, 32)],
                 actor_hidden = [(64, 64)]));
 
@@ -549,4 +550,28 @@ showAgent("output/MC_τ_actor0.2τ_critic0.13337η_actor0.00022η_critic0.001.bs
 
 
 
+ProfileView.@profview trainLearner(Learner(DDPG(),
+PER(),
+Clamped()),
+Parameter(environment="MountainCarContinuous-v0",
+# Parameter(environment="LunarLander-v2",
+train_start = 1000, # back to 1000
+# max_episodes_length = 999, #delete
+max_episodes = 2, # back to 200
+noise_type = "ou",
+θ=0.2,
+σ=0.3,
+decay_type=Adaptive(),
+target_reward=95.0,
+batch_size=128,
+η_actor = 0.001,
+η_critic = 0.001,
+τ_actor=0.05,
+τ_critic=0.05,
+critic_hidden = [(32, 32)],
+actor_hidden = [(64, 64)]));
 
+
+
+
+ProfileView.@profview sum(1:10)

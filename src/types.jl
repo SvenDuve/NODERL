@@ -8,6 +8,7 @@ abstract type Process <: RL end
 # Concrete  
 struct Episodic <: Process end
 struct Online <: Process end
+struct PER <: Process end
 
 
 
