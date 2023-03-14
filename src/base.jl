@@ -274,7 +274,7 @@ function greetings()
     println("Heeeeelllooo RL")
 end
 
-function getVals(algorithm::T) where T <: Union{DDPG, SAC, TW3} 
+function getVals(algorithm::T) where T <: Union{DDPG, SAC, TD3} 
     return p, μϕ
 end
 

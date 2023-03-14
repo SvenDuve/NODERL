@@ -13,6 +13,21 @@ function setFunctionApproximation(algorithm::DDPG)
 end
 
 
+function setFunctionApproximation(algorithm::TD3)
+
+    # set Critic
+    global Qθ = setNetwork(Critic())
+    global Qθ′ = deepcopy(Qθ)
+
+    # get Actor
+
+    global μϕ = setNetwork(Actor())
+    global μϕ′ = deepcopy(μϕ)
+
+    
+end
+
+
 function setFunctionApproximation(algorithm::T) where T <: NODEArchitecture 
     
     global fθ = setNetwork(NODE()) # Code up a Network that will be solved with euler steps

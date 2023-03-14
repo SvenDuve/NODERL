@@ -235,6 +235,53 @@ q, μϕ = trainLearner(Learner(DDPG(),
 
 
 showResults(DDPG(), q)
+q, μϕ = trainLearner(Learner(DDPG(),
+                Online(),
+                Clamped()),
+                Parameter(environment="MountainCarContinuous-v0",
+                # Parameter(environment="LunarLander-v2",
+                train_start = 1000,
+                max_episodes = 200,
+                noise_type = "ou",
+                θ=0.2,
+                σ=0.3,
+                decay_type=Adaptive(),
+                target_reward=95.0,
+                batch_size=128,
+                η_actor = 0.001,
+                η_critic = 0.001,
+                τ_actor=0.005,
+                τ_critic=0.005,
+                critic_hidden = [(32, 32)],
+                actor_hidden = [(64, 64)]));
+
+
+showResults(DDPG(), q)
+
+
+# TD3
+q, μϕ = trainLearner(Learner(TD3(),
+                Online(),
+                Clamped()),
+                Parameter(environment="MountainCarContinuous-v0",
+                # Parameter(environment="LunarLander-v2",
+                train_start = 1000,
+                max_episodes = 200,
+                noise_type = "ou",
+                θ=0.2,
+                σ=0.3,
+                decay_type=Adaptive(),
+                target_reward=95.0,
+                batch_size=128,
+                η_actor = 0.001,
+                η_critic = 0.001,
+                τ_actor=0.005,
+                τ_critic=0.005,
+                critic_hidden = [(32, 32)],
+                actor_hidden = [(64, 64)]));
+
+
+showResults(DDPG(), q)
 
 
 p, μϕ = trainLearner(Learner(DDPG(),

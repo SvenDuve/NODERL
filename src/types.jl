@@ -22,7 +22,7 @@ struct Clamped <: ActionSelection end
 
 # Concrete Algorithms
 struct DDPG <: Agent end
-struct TW3 <: Agent end 
+struct TD3 <: Agent end 
 struct SAC <: Agent end
 
 

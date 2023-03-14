@@ -6,7 +6,7 @@ function showResults(t::T, p) where T <: NODEArchitecture
 end
 
 
-function showResults(t::T, p) where T <: Union{DDPG, TW3, SAC}
+function showResults(t::T, p) where T <: Union{DDPG, TD3, SAC}
     plot(p.total_rewards, label="Total Rewards")
 end
 
@@ -30,7 +30,7 @@ function replPlots(t::T, file, p) where T <: NODEArchitecture
 
 end
 
-function replPlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
+function replPlots(t::T, file, p) where T <: Union{DDPG, TD3, SAC}
     
     diag = lineplot(collect(1:length(p.total_rewards)), 
                     Array{Float64}(p.total_rewards),
@@ -41,7 +41,7 @@ function replPlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
 end
 
 
-function storePlots(t::T, file, p) where T <: Union{DDPG, TW3, SAC}
+function storePlots(t::T, file, p) where T <: Union{DDPG, TD3, SAC}
     
     diag = plot(collect(1:length(p.total_rewards)), 
                     Array{Float64}(p.total_rewards),

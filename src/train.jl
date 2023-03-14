@@ -90,6 +90,99 @@ function train(algorithm::DDPG, l::Learner)
 end
 
 
+
+## Basic TD3 Training Algorithm
+
+function train(algorithm::TD3, l::Learner)
+
+    scores = zeros(100)
+    e = 1
+    idx = 1
+
+    while e <= p.max_episodes
+
+        s::Vector{Float32} = env.reset()
+        r::Float64 = 0.0
+        a::Vector{Float32} = [0.0] # check action space
+        t::Bool = false
+
+        episode_rewards = 0
+
+        #ep = Episode(env, l, p)()
+
+        for i in 1:p.max_episodes_length
+
+            p.env_steps += 1
+            p.frames += 1
+
+            a = action(l.action_type, l.train, s, p)
+            s′, r, t, _ = env.step(a)
+            episode_rewards += r
+            #noise.X = a
+            #@show noise.X
+
+            remember(RandBuffer(), p.mem_size, s, a, r, s′, t)
+
+            if p.frames >= p.train_start# && π.train
+
+                S, A, R, S′, T = sampleBuffer(l.serial)
+
+                A′ = μϕ′(S′)
+                V′ = Qθ′(vcat(S′, A′))
+                Y = R + p.γ * ((1 .- T) .* V′)
+
+                # critic
+                dθ = gradient(() -> loss(Critic(), Y, S, A), Flux.params(Qθ))
+                update!(Optimise.Adam(p.η_critic), Flux.params(Qθ), dθ)
+                # actor
+                dϕ = gradient(() -> -loss(Actor(), S), Flux.params(μϕ))
+                update!(Optimise.Adam(p.η_actor), Flux.params(μϕ), dϕ)
+
+
+                for (base, target) in zip(Flux.params(Qθ), Flux.params(Qθ′))
+                    target .= p.τ_critic * base .+ (1 - p.τ_critic) * target
+                end
+
+                for (base, target) in zip(Flux.params(μϕ), Flux.params(μϕ′))
+                    target .= p.τ_actor * base .+ (1 - p.τ_actor) * target
+                end
+            end
+
+
+
+            s = s′
+
+
+            if t
+                append!(p.episode_length, i)
+                env.close()
+                break 
+            end
+            
+            
+            # if length(𝒟) >= p.train_start# && π.train
+
+            
+        end
+        
+        append!(p.total_rewards, episode_rewards)
+        
+        scores[idx] = episode_rewards
+        idx = idx % 100 + 1
+        avg = mean(scores)
+        if e % 10 == 0
+            #showReward(algorithm, e, avg, p) # Function to replace below output
+            println("Episode: $e | Score: $(round(episode_rewards, digits=2)) | Avg score: $(round(avg, digits=2)) | Frames: $(p.frames) | Sigma: $(noise.σ)")
+            #println("Episode: $e | Score: $(ep.total_reward) | Avg score: $avg | Frames: $(p.frames)")
+        end
+        e += 1
+
+    end
+
+end
+
+
+
 ## Adjusted training Algorithm for the combined Agent
 function trainDDPG(algorithm::modelDDPG) 
 
